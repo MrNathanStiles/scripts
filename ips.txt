@@ -94,7 +94,7 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	var build_matrix_uy = (90.0 - param p_build_matrix_up) / 90.0
 	var build_matrix_uz = (90.0 - param p_build_matrix_forward) / 90.0
 	
-	var build_matrix_ulen = sqrt (((var build_matrix_ux * var build_matrix_ux) + (var build_matrix_uy * var build_matrix_uy)) + (var build_matrix_uz * var build_matrix_uz))
+	call vec_len (var build_matrix_ux, var build_matrix_uy, var build_matrix_uz, var build_matrix_ulen)
 	
 	if (var build_matrix_ulen > 0.0)
 	{
@@ -115,7 +115,8 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	var build_matrix_ry = (var build_matrix_uz * var build_matrix_nx) - (var build_matrix_ux * var build_matrix_nz)
 	var build_matrix_rz = (var build_matrix_ux * var build_matrix_ny) - (var build_matrix_uy * var build_matrix_nx)
 	
-	var build_matrix_rlen = sqrt (((var build_matrix_rx * var build_matrix_rx) + (var build_matrix_ry * var build_matrix_ry)) + (var build_matrix_rz * var build_matrix_rz))
+	call vec_len (var build_matrix_rx, var build_matrix_ry, var build_matrix_rz, var build_matrix_rlen)
+	
 	if (var build_matrix_rlen > 0.0)
 	{
 		var build_matrix_rx = var build_matrix_rx / var build_matrix_rlen
@@ -152,6 +153,28 @@ define function to_local (fractional to_local_x, fractional to_local_y, fraction
 	param to_local_y = var to_local_ty
 	param to_local_z = var to_local_tz
 }
+
+define function to_world (fractional to_world_x, fractional to_world_y, fractional to_world_z)
+{
+	define var fractional to_world_tx
+	define var fractional to_world_ty
+	define var fractional to_world_tz
+	
+	var to_world_tx = ((var m00 * param to_world_x) + (var m10 * param to_world_y)) + (var m20 * param to_world_z)
+	var to_world_ty = ((var m01 * param to_world_x) + (var m11 * param to_world_y)) + (var m21 * param to_world_z)
+	var to_world_tz = ((var m02 * param to_world_x) + (var m12 * param to_world_y)) + (var m22 * param to_world_z)
+	
+	param to_world_x = var to_world_tx
+	param to_world_y = var to_world_ty
+	param to_world_z = var to_world_tz
+}
+
+function toWorld(v)
+	local wx = m00 * v.x + m01 * v.y + m02 * v.z
+	local wy = m10 * v.x + m11 * v.y + m12 * v.z
+	local wz = m20 * v.x + m21 * v.y + m22 * v.z
+	return vec(wx, wy, wz)
+end
 
 on_tick
 {
