@@ -35,38 +35,36 @@ define function vec_scale (fractional vec_scale_x, fractional vec_scale_y, fract
 {
 	param vec_scale_x = param vec_scale_x * param vec_scale_n
 	param vec_scale_y = param vec_scale_y * param vec_scale_n
-	param vec_scale_z = param vec_scale_z * param vec_scale_n 
+	param vec_scale_z = param vec_scale_z * param vec_scale_n
 }
 
 
 define function vec_dot (fractional vec_dot_x1, fractional vec_dot_y1, fractional vec_dot_z1, fractional vec_dot_x2, fractional vec_dot_y2, fractional vec_dot_z2, fractional vec_dot_result)
 {
-	param vec_dot_result = param vec_dot_x1 * param vec_dot_x2 + param vec_dot_y1 * param vec_dot_y2 + param vec_dot_z1 * param vec_dot_z2
+	param vec_dot_result = ((param vec_dot_x1 * param vec_dot_x2) + (param vec_dot_y1 * param vec_dot_y2)) + (param vec_dot_z1 * param vec_dot_z2)
 }
 
 define function vec_len_sq (fractional vec_len_sq_x, fractional vec_len_sq_y, fractional vec_len_sq_z, fractional vec_len_sq_result)
 {
-	call vec_dot(param vec_len_sq_x, param vec_len_sq_y, param vec_len_sq_z, param vec_len_sq_x, param vec_len_sq_y, param vec_len_sq_z, param vec_len_sq_result)
+	call vec_dot (param vec_len_sq_x, param vec_len_sq_y, param vec_len_sq_z, param vec_len_sq_x, param vec_len_sq_y, param vec_len_sq_z, param vec_len_sq_result)
 }
 
 define function vec_len (fractional vec_len_x, fractional vec_len_y, fractional vec_len_z, fractional vec_len_result)
 {
-	call vec_len_sq(param vec_len_x, param vec_len_z, param vec_len_z, param vec_len_result)
-	param vec_len_result = sqrt(param vec_len_result)
+	call vec_len_sq (param vec_len_x, param vec_len_z, param vec_len_z, param vec_len_result)
+	param vec_len_result = sqrt (param vec_len_result)
 }
 
-define_function vec_normalize()
+define_function vec_normalize(fractional vec_normalize_x, fractional vec_normalize_y, fractional vec_normalize_z)
 {
-
+	define var fractional vec_normalize_len
+	call vec_len (param vec_normalize_x, param vec_normalize_y, param vec_normalize_z, var vec_normalize_len)
+	if (var vec_normalize_len == 0.0)
+	{
+		var vec_normalize_len = 1.0
+	}
+	call vec_scale(param vec_normalize_x, param vec_normalize_y, param vec_normalize_z, 1.0 / var vec_normalize_len)
 }
-
-function vecNormalize(a)
-	local len = vecLen(a)
-	if len == 0 then
-		return vec(0, 0, 0), 0
-	end
-	return vecScale(a, 1 / len), len
-end
 
 define function build_matrix (fractional p_build_matrix_compass, fractional p_build_matrix_right, fractional p_build_matrix_up, fractional p_build_matrix_forward)
 {
@@ -157,15 +155,15 @@ on_tick
 	define var fractional on_tick_forward_x
 	define var fractional on_tick_forward_y
 	define var fractional on_tick_forward_z
-
+	
 	define var fractional on_tick_up_x
 	define var fractional on_tick_up_y
 	define var fractional on_tick_up_z
-
+	
 	define var fractional on_tick_right_x
 	define var fractional on_tick_right_y
 	define var fractional on_tick_right_z
-
+	
 	define var fractional on_tick_len
 	
 	var on_tick_forward_x = 0.0
@@ -196,17 +194,17 @@ on_tick
 	in disp_right_x.display_value = var on_tick_right_x
 	in disp_right_y.display_value = var on_tick_right_y
 	in disp_right_z.display_value = var on_tick_right_z
-
-	call vec_len(var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z, var on_tick_len)
-	in disp_forward_len.display_value = var on_tick_len
-
-	call vec_len(var on_tick_up_x, var on_tick_up_y, var on_tick_up_z, var on_tick_len)
-	in disp_up_len.display_value = var on_tick_len
-
-	call vec_len(var on_tick_right_x, var on_tick_right_y, var on_tick_right_z, var on_tick_len)
-	in disp_right_len.display_value = var on_tick_len
-
-
 	
-
+	call vec_len (var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z, var on_tick_len)
+	in disp_forward_len.display_value = var on_tick_len
+	
+	call vec_len (var on_tick_up_x, var on_tick_up_y, var on_tick_up_z, var on_tick_len)
+	in disp_up_len.display_value = var on_tick_len
+	
+	call vec_len (var on_tick_right_x, var on_tick_right_y, var on_tick_right_z, var on_tick_len)
+	in disp_right_len.display_value = var on_tick_len
+	
+	
+	
+	
 }
