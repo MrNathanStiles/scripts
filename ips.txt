@@ -55,18 +55,18 @@ define function vec_len (fractional vec_len_x, fractional vec_len_y, fractional 
 	param vec_len_result = sqrt (param vec_len_result)
 }
 
-define function vec_normalize(fractional vec_normalize_x, fractional vec_normalize_y, fractional vec_normalize_z)
+define function vec_normalize (fractional vec_normalize_x, fractional vec_normalize_y, fractional vec_normalize_z)
 {
 	define var fractional vec_normalize_len
 	var vec_normalize_len = 0.0
-
+	
 	call vec_len (param vec_normalize_x, param vec_normalize_y, param vec_normalize_z, var vec_normalize_len)
 	if (var vec_normalize_len == 0.0)
 	{
 		var vec_normalize_len = 1.0
 	}
 	var vec_normalize_len = 1.0 / var vec_normalize_len
-	call vec_scale(param vec_normalize_x, param vec_normalize_y, param vec_normalize_z, var vec_normalize_len)
+	call vec_scale (param vec_normalize_x, param vec_normalize_y, param vec_normalize_z, var vec_normalize_len)
 }
 
 define function build_matrix (fractional p_build_matrix_compass, fractional p_build_matrix_right, fractional p_build_matrix_up, fractional p_build_matrix_forward)
@@ -90,11 +90,10 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	define var fractional build_matrix_fy
 	define var fractional build_matrix_fz
 	
-	-- Temp storage to maintain cross-product alignment stability
 	define var fractional build_matrix_cx
 	define var fractional build_matrix_cy_ref
 	define var fractional build_matrix_cz
-
+	
 	var build_matrix_ux = (90.0 - param p_build_matrix_right) / 90.0
 	var build_matrix_uy = (90.0 - param p_build_matrix_up) / 90.0
 	var build_matrix_uz = (90.0 - param p_build_matrix_forward) / 90.0
@@ -134,11 +133,11 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 		var build_matrix_fy = var build_matrix_fy / var build_matrix_rlen
 		var build_matrix_fz = var build_matrix_fz / var build_matrix_rlen
 	}
-
+	
 	var build_matrix_rx = (var build_matrix_fy * var build_matrix_uz) - (var build_matrix_fz * var build_matrix_uy)
 	var build_matrix_ry = (var build_matrix_fz * var build_matrix_ux) - (var build_matrix_fx * var build_matrix_uz)
 	var build_matrix_rz = (var build_matrix_fx * var build_matrix_uy) - (var build_matrix_fy * var build_matrix_ux)
-
+	
 	var m00 = var build_matrix_rx
 	var m01 = var build_matrix_ry
 	var m02 = var build_matrix_rz
