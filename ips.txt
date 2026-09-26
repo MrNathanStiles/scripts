@@ -90,6 +90,11 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	define var fractional build_matrix_fy
 	define var fractional build_matrix_fz
 	
+	-- Temp storage to maintain cross-product alignment stability
+	define var fractional build_matrix_cx
+	define var fractional build_matrix_cy_ref
+	define var fractional build_matrix_cz
+
 	var build_matrix_ux = (90.0 - param p_build_matrix_right) / 90.0
 	var build_matrix_uy = (90.0 - param p_build_matrix_up) / 90.0
 	var build_matrix_uz = (90.0 - param p_build_matrix_forward) / 90.0
@@ -107,27 +112,33 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	
 	var build_matrix_sy = sin (var build_matrix_yaw)
 	var build_matrix_cy = cos (var build_matrix_yaw)
-	var build_matrix_nx = var build_matrix_sy
-	var build_matrix_ny = 0.0
-	var build_matrix_nz = var build_matrix_cy
+	var build_matrix_cx = var build_matrix_sy
+	var build_matrix_cy_ref = 0.0
+	var build_matrix_cz = var build_matrix_cy
 	
-	var build_matrix_rx = (var build_matrix_uy * var build_matrix_nz) - (var build_matrix_uz * var build_matrix_ny)
-	var build_matrix_ry = (var build_matrix_uz * var build_matrix_nx) - (var build_matrix_ux * var build_matrix_nz)
-	var build_matrix_rz = (var build_matrix_ux * var build_matrix_ny) - (var build_matrix_uy * var build_matrix_nx)
+	var build_matrix_rx = (var build_matrix_cz * 1.0) - (var build_matrix_cy_ref * 0.0)
+	var build_matrix_ry = 0.0
+	var build_matrix_rz = (var build_matrix_cx * 0.0) - (var build_matrix_cz * 0.0)
+	var build_matrix_rx = var build_matrix_cy
+	var build_matrix_ry = 0.0
+	var build_matrix_rz = 0.0 - var build_matrix_sy
 	
-	call vec_len (var build_matrix_rx, var build_matrix_ry, var build_matrix_rz, var build_matrix_rlen)
+	var build_matrix_fx = (var build_matrix_uy * var build_matrix_rz) - (var build_matrix_uz * var build_matrix_ry)
+	var build_matrix_fy = (var build_matrix_uz * var build_matrix_rx) - (var build_matrix_ux * var build_matrix_rz)
+	var build_matrix_fz = (var build_matrix_ux * var build_matrix_ry) - (var build_matrix_uy * var build_matrix_rx)
 	
+	call vec_len (var build_matrix_fx, var build_matrix_fy, var build_matrix_fz, var build_matrix_rlen)
 	if (var build_matrix_rlen > 0.0)
 	{
-		var build_matrix_rx = var build_matrix_rx / var build_matrix_rlen
-		var build_matrix_ry = var build_matrix_ry / var build_matrix_rlen
-		var build_matrix_rz = var build_matrix_rz / var build_matrix_rlen
+		var build_matrix_fx = var build_matrix_fx / var build_matrix_rlen
+		var build_matrix_fy = var build_matrix_fy / var build_matrix_rlen
+		var build_matrix_fz = var build_matrix_fz / var build_matrix_rlen
 	}
-	
-	var build_matrix_fx = (var build_matrix_ry * var build_matrix_uz) - (var build_matrix_rz * var build_matrix_uy)
-	var build_matrix_fy = (var build_matrix_rz * var build_matrix_ux) - (var build_matrix_rx * var build_matrix_uz)
-	var build_matrix_fz = (var build_matrix_rx * var build_matrix_uy) - (var build_matrix_ry * var build_matrix_ux)
-	
+
+	var build_matrix_rx = (var build_matrix_fy * var build_matrix_uz) - (var build_matrix_fz * var build_matrix_uy)
+	var build_matrix_ry = (var build_matrix_fz * var build_matrix_ux) - (var build_matrix_fx * var build_matrix_uz)
+	var build_matrix_rz = (var build_matrix_fx * var build_matrix_uy) - (var build_matrix_fy * var build_matrix_ux)
+
 	var m00 = var build_matrix_rx
 	var m01 = var build_matrix_ry
 	var m02 = var build_matrix_rz
@@ -145,9 +156,9 @@ define function to_local (fractional to_local_x, fractional to_local_y, fraction
 	define var fractional to_local_ty
 	define var fractional to_local_tz
 	
-	var to_local_tx = ((var m00 * param to_local_x) + (var m10 * param to_local_y)) + (var m20 * param to_local_z)
-	var to_local_ty = ((var m01 * param to_local_x) + (var m11 * param to_local_y)) + (var m21 * param to_local_z)
-	var to_local_tz = ((var m02 * param to_local_x) + (var m12 * param to_local_y)) + (var m22 * param to_local_z)
+	var to_local_tx = ((var m00 * param to_local_x) + (var m01 * param to_local_y)) + (var m02 * param to_local_z)
+	var to_local_ty = ((var m10 * param to_local_x) + (var m11 * param to_local_y)) + (var m12 * param to_local_z)
+	var to_local_tz = ((var m20 * param to_local_x) + (var m21 * param to_local_y)) + (var m22 * param to_local_z)
 	
 	param to_local_x = var to_local_tx
 	param to_local_y = var to_local_ty
@@ -160,9 +171,9 @@ define function to_world (fractional to_world_x, fractional to_world_y, fraction
 	define var fractional to_world_ty
 	define var fractional to_world_tz
 	
-	var to_world_tx = ((var m00 * param to_world_x) + (var m01 * param to_world_y)) + (var m02 * param to_world_z)
-	var to_world_ty = ((var m10 * param to_world_x) + (var m11 * param to_world_y)) + (var m12 * param to_world_z)
-	var to_world_tz = ((var m20 * param to_world_x) + (var m21 * param to_world_y)) + (var m12 * param to_world_z)
+	var to_world_tx = ((var m00 * param to_world_x) + (var m10 * param to_world_y)) + (var m20 * param to_world_z)
+	var to_world_ty = ((var m01 * param to_world_x) + (var m11 * param to_world_y)) + (var m21 * param to_world_z)
+	var to_world_tz = ((var m02 * param to_world_x) + (var m12 * param to_world_y)) + (var m22 * param to_world_z)
 	
 	param to_world_x = var to_world_tx
 	param to_world_y = var to_world_ty
