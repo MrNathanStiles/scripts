@@ -84,6 +84,7 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 	define var fractional build_matrix_fx
 	define var fractional build_matrix_fy
 	define var fractional build_matrix_fz
+	define var fractional build_matrix_rlen
 	
 	var build_matrix_ux = (90.0 - param build_matrix_right) / 90.0
 	var build_matrix_uy = (90.0 - param build_matrix_up) / 90.0
@@ -101,17 +102,13 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 	var build_matrix_sy = sin (var build_matrix_yaw)
 	var build_matrix_cy = cos (var build_matrix_yaw)
 	
-	var build_matrix_nx = var build_matrix_sy
-	var build_matrix_ny = 0.0
-	var build_matrix_nz = var build_matrix_cy
-	
 	var build_matrix_rx = var build_matrix_cy
 	var build_matrix_ry = 0.0
-	var build_matrix_rz = 0.0 - var build_matrix_sy
+	var build_matrix_rz = var build_matrix_sy
 	
-	var build_matrix_fx = (var build_matrix_uy * var build_matrix_rz) - (var build_matrix_uz * var build_matrix_ry)
-	var build_matrix_fy = (var build_matrix_uz * var build_matrix_rx) - (var build_matrix_ux * var build_matrix_rz)
-	var build_matrix_fz = (var build_matrix_ux * var build_matrix_ry) - (var build_matrix_uy * var build_matrix_rx)
+	var build_matrix_fx = (var build_matrix_rz * var build_matrix_uy) - (var build_matrix_ry * var build_matrix_uz)
+	var build_matrix_fy = (var build_matrix_rx * var build_matrix_uz) - (var build_matrix_rz * var build_matrix_ux)
+	var build_matrix_fz = (var build_matrix_ry * var build_matrix_ux) - (var build_matrix_rx * var build_matrix_uy)
 	
 	call vec_len (var build_matrix_fx, var build_matrix_fy, var build_matrix_fz, var build_matrix_rlen)
 	if (var build_matrix_rlen > 0.0)
@@ -121,9 +118,9 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 		var build_matrix_fz = var build_matrix_fz / var build_matrix_rlen
 	}
 	
-	var build_matrix_rx = (var build_matrix_fy * var build_matrix_uz) - (var build_matrix_fz * var build_matrix_uy)
-	var build_matrix_ry = (var build_matrix_fz * var build_matrix_ux) - (var build_matrix_fx * var build_matrix_uz)
-	var build_matrix_rz = (var build_matrix_fx * var build_matrix_uy) - (var build_matrix_fy * var build_matrix_ux)
+	var build_matrix_rx = (var build_matrix_uy * var build_matrix_fz) - (var build_matrix_uz * var build_matrix_fy)
+	var build_matrix_ry = (var build_matrix_uz * var build_matrix_fx) - (var build_matrix_ux * var build_matrix_fz)
+	var build_matrix_rz = (var build_matrix_ux * var build_matrix_fy) - (var build_matrix_uy * var build_matrix_fx)
 	
 	var m00 = var build_matrix_rx
 	var m01 = var build_matrix_ry
