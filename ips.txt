@@ -31,6 +31,14 @@ var m20 = 0.0
 var m21 = 0.0
 var m22 = 1.0
 
+define function vec_scale (fractional vec_scale_x, fractional vec_scale_y, fractional vec_scale_z, fractional vec_scale_n)
+{
+	param vec_scale_x = param vec_scale_x * param vec_scale_n
+	param vec_scale_y = param vec_scale_y * param vec_scale_n
+	param vec_scale_z = param vec_scale_z * param vec_scale_n 
+}
+
+
 define function vec_dot (fractional vec_dot_x1, fractional vec_dot_y1, fractional vec_dot_z1, fractional vec_dot_x2, fractional vec_dot_y2, fractional vec_dot_z2, fractional vec_dot_result)
 {
 	param vec_dot_result = param vec_dot_x1 * param vec_dot_x2 + param vec_dot_y1 * param vec_dot_y2 + param vec_dot_z1 * param vec_dot_z2
@@ -47,6 +55,18 @@ define function vec_len (fractional vec_len_x, fractional vec_len_y, fractional 
 	param vec_len_result = sqrt(param vec_len_result)
 }
 
+define_function vec_normalize()
+{
+
+}
+
+function vecNormalize(a)
+	local len = vecLen(a)
+	if len == 0 then
+		return vec(0, 0, 0), 0
+	end
+	return vecScale(a, 1 / len), len
+end
 
 define function build_matrix (fractional p_build_matrix_compass, fractional p_build_matrix_right, fractional p_build_matrix_up, fractional p_build_matrix_forward)
 {
