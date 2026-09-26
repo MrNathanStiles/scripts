@@ -1,0 +1,53 @@
+
+
+
+on_tick
+{
+	define var fractional speed
+    define var fractional hold
+    
+	var speed = -30.0
+    var hold = -1.0
+	
+	in motor_front.target_rps = out motor_front.rps * var hold
+	in motor_back.target_rps = out motor_back.rps * var hold
+	in motor_left.target_rps = out motor_left.rps * var hold
+	in motor_right.target_rps = out motor_right.rps * var hold
+	in motor_top.target_rps = out motor_top.rps * var hold
+	in motor_bottom.target_rps = out motor_bottom.rps * var hold
+	
+	if (out button_front.is_pressed)
+	{
+		in motor_front.target_rps = var speed
+	}
+	elseif (out button_back.is_pressed)
+	{
+		in motor_back.target_rps = var speed
+	}
+	elseif (out button_left.is_pressed)
+	{
+		in motor_left.target_rps = var scale
+	}
+	elseif (out button_right.is_pressed)
+	{
+		in motor_right.target_rps = var scale
+	}
+    elseif (out button_top.is_pressed)
+	{
+		in motor_top.target_rps = var scale
+	}
+    elseif (out button_bottom.is_pressed)
+	{
+		in motor_bottom.target_rps = var scale
+	}
+    elseif (out button_all.is_pressed)
+	{
+        in motor_front.target_rps = var speed * -1.0
+		in motor_back.target_rps = var speed * -1.0
+		in motor_left.target_rps = var speed * -1.0
+		in motor_right.target_rps = var speed * -1.0
+		in motor_top.target_rps = var speed * -1.0
+		in motor_bottom.target_rps = var speed * -1.0
+	}
+
+}
