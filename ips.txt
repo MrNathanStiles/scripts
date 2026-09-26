@@ -17,7 +17,6 @@ define var fractional m21
 define var fractional m22
 
 var PI = 3.141592
-var TAU = var PI * 2.0
 
 var m00 = 1.0
 var m01 = 0.0
@@ -69,7 +68,7 @@ define function vec_normalize (fractional vec_normalize_x, fractional vec_normal
 	call vec_scale (param vec_normalize_x, param vec_normalize_y, param vec_normalize_z, var vec_normalize_len)
 }
 
-define function build_matrix (fractional p_build_matrix_compass, fractional p_build_matrix_right, fractional p_build_matrix_up, fractional p_build_matrix_forward)
+define function build_matrix (fractional build_matrix_compass, fractional build_matrix_right, fractional build_matrix_up, fractional build_matrix_forward)
 {
 	
 	define var fractional build_matrix_yaw
@@ -90,16 +89,11 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	define var fractional build_matrix_fy
 	define var fractional build_matrix_fz
 	
-	define var fractional build_matrix_cx
-	define var fractional build_matrix_cy_ref
-	define var fractional build_matrix_cz
-	
-	var build_matrix_ux = (90.0 - param p_build_matrix_right) / 90.0
-	var build_matrix_uy = (90.0 - param p_build_matrix_up) / 90.0
-	var build_matrix_uz = (90.0 - param p_build_matrix_forward) / 90.0
+	var build_matrix_ux = (90.0 - param build_matrix_right) / 90.0
+	var build_matrix_uy = (90.0 - param build_matrix_up) / 90.0
+	var build_matrix_uz = (90.0 - param build_matrix_forward) / 90.0
 	
 	call vec_len (var build_matrix_ux, var build_matrix_uy, var build_matrix_uz, var build_matrix_ulen)
-	
 	if (var build_matrix_ulen > 0.0)
 	{
 		var build_matrix_ux = var build_matrix_ux / var build_matrix_ulen
@@ -107,17 +101,14 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 		var build_matrix_uz = var build_matrix_uz / var build_matrix_ulen
 	}
 	
-	var build_matrix_yaw = (param p_build_matrix_compass / 180.0) * var PI
-	
+	var build_matrix_yaw = (param build_matrix_compass / 180.0) * var PI
 	var build_matrix_sy = sin (var build_matrix_yaw)
 	var build_matrix_cy = cos (var build_matrix_yaw)
-	var build_matrix_cx = var build_matrix_sy
-	var build_matrix_cy_ref = 0.0
-	var build_matrix_cz = var build_matrix_cy
 	
-	var build_matrix_rx = (var build_matrix_cz * 1.0) - (var build_matrix_cy_ref * 0.0)
-	var build_matrix_ry = 0.0
-	var build_matrix_rz = (var build_matrix_cx * 0.0) - (var build_matrix_cz * 0.0)
+	var build_matrix_nx = var build_matrix_sy
+	var build_matrix_ny = 0.0
+	var build_matrix_nz = var build_matrix_cy
+	
 	var build_matrix_rx = var build_matrix_cy
 	var build_matrix_ry = 0.0
 	var build_matrix_rz = 0.0 - var build_matrix_sy
