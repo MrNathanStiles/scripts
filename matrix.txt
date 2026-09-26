@@ -142,9 +142,9 @@ define function to_local (fractional to_local_x, fractional to_local_y, fraction
 	define var fractional to_local_ty
 	define var fractional to_local_tz
 	
-	var to_local_tx = ((var m00 * param to_local_x) + (var m01 * param to_local_y)) + (var m02 * param to_local_z)
-	var to_local_ty = ((var m10 * param to_local_x) + (var m11 * param to_local_y)) + (var m12 * param to_local_z)
-	var to_local_tz = ((var m20 * param to_local_x) + (var m21 * param to_local_y)) + (var m22 * param to_local_z)
+	var to_local_tx = ((var m00 * param to_local_x) + (var m10 * param to_local_y)) + (var m20 * param to_local_z)
+	var to_local_ty = ((var m01 * param to_local_x) + (var m11 * param to_local_y)) + (var m21 * param to_local_z)
+	var to_local_tz = ((var m02 * param to_local_x) + (var m12 * param to_local_y)) + (var m22 * param to_local_z)
 	
 	param to_local_x = var to_local_tx
 	param to_local_y = var to_local_ty
@@ -157,9 +157,9 @@ define function to_world (fractional to_world_x, fractional to_world_y, fraction
 	define var fractional to_world_ty
 	define var fractional to_world_tz
 	
-	var to_world_tx = ((var m00 * param to_world_x) + (var m10 * param to_world_y)) + (var m20 * param to_world_z)
-	var to_world_ty = ((var m01 * param to_world_x) + (var m11 * param to_world_y)) + (var m21 * param to_world_z)
-	var to_world_tz = ((var m02 * param to_world_x) + (var m12 * param to_world_y)) + (var m22 * param to_world_z)
+	var to_world_tx = ((var m00 * param to_world_x) + (var m01 * param to_world_y)) + (var m02 * param to_world_z)
+	var to_world_ty = ((var m10 * param to_world_x) + (var m11 * param to_world_y)) + (var m12 * param to_world_z)
+	var to_world_tz = ((var m20 * param to_world_x) + (var m21 * param to_world_y)) + (var m22 * param to_world_z)
 	
 	param to_world_x = var to_world_tx
 	param to_world_y = var to_world_ty
