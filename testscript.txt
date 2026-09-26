@@ -1,0 +1,29 @@
+define var fractional tick
+var tick = 0.0
+define function foo (fractional bar)
+{
+	param bar = round (param bar)
+}
+define function clamp (fractional value, fractional min, fractional max)
+{
+	if (param value > param max)
+	{
+		param value = param max
+	}
+	elseif (param value < param min)
+	{
+		param value = param min
+	}
+}
+on_tick
+{
+	var tick = var tick + 1.0
+	define var fractional power
+	var power = var tick / 10000.0
+	if (var power > 1.0)
+	{
+		var power = 1.0
+	}
+	call foo (var power)
+}
+

@@ -1,0 +1,27 @@
+define function atan2(fractional a, fractional b, fractional c)
+{
+	if (param b > 0.0)
+	{
+        param c = atan (param a / param b)
+    }
+    elseif ((param b < 0.0) && (param a >= 0.0))
+	{
+        param c = atan (param a / param b) + var PI
+    }
+    elseif ((param b < 0.0) && (param a < 0.0))
+	{
+        param c = atan (param a / param b) - var PI
+    }
+    elseif ((param b == 0.0) && (param a > 0.0))
+	{
+        param c = var PI / 2.0
+    }
+    elseif ((param b == 0.0) && (param a < 0.0))
+	{
+        param c = 0.0 - (var PI / 2.0)
+    }
+    else
+	{
+        param c = 0.0
+    }
+}

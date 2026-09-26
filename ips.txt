@@ -1,0 +1,106 @@
+
+
+
+define var fractional PI
+define var fractional TAU
+
+define var fractional m00
+define var fractional m01
+define var fractional m02
+
+define var fractional m10
+define var fractional m11
+define var fractional m12
+
+define var fractional m20
+define var fractional m21
+define var fractional m22
+
+var PI = 3.141592
+var TAU = var PI * 2.0
+
+var m00 = 1.0
+var m01 = 0.0
+var m02 = 0.0
+
+var m10 = 0.0
+var m11 = 1.0
+var m12 = 0.0
+
+var m20 = 0.0
+var m21 = 0.0
+var m22 = 1.0
+
+define function build_matrix (fractional p_build_matrix_compass, fractional p_build_matrix_right, fractional p_build_matrix_up, fractional p_build_matrix_forward)
+{
+	
+	define var fractional build_matrix_yaw
+	define var fractional build_matrix_ux
+	define var fractional build_matrix_uy
+	define var fractional build_matrix_uz
+	define var fractional build_matrix_ulen
+	define var fractional build_matrix_sy
+	define var fractional build_matrix_cy
+	define var fractional build_matrix_nx
+	define var fractional build_matrix_ny
+	define var fractional build_matrix_nz
+	define var fractional build_matrix_rx
+	define var fractional build_matrix_ry
+	define var fractional build_matrix_rz
+	define var fractional build_matrix_rlen
+	define var fractional build_matrix_fx
+	define var fractional build_matrix_fy
+	define var fractional build_matrix_fz
+
+	var build_matrix_ux = (param p_build_matrix_right - 90.0) / 90.0 
+	var build_matrix_uy = (param p_build_matrix_up - 90.0) / 90.0 
+	var build_matrix_uz = (param p_build_matrix_forward - 90.0) / 90.0 
+	
+	var build_matrix_ulen = sqrt(var build_matrix_ux * var build_matrix_ux + var build_matrix_uy * var build_matrix_uy + var build_matrix_uz * var build_matrix_uz)
+	
+	if (var build_matrix_ulen > 0.0)
+	{
+		var build_matrix_ux = var build_matrix_ux / var build_matrix_ulen
+		var build_matrix_uy = var build_matrix_uy / var build_matrix_ulen
+		var build_matrix_uz = var build_matrix_uz / var build_matrix_ulen
+	}
+
+    var build_matrix_yaw = (param p_build_matrix_compass * var PI) / 180.0
+
+	var build_matrix_sy = sin(var build_matrix_yaw)
+	var build_matrix_cy = cos(var build_matrix_yaw)
+	var build_matrix_nx = var build_matrix_sy 
+	var build_matrix_ny = 0.0
+	var build_matrix_nz = var build_matrix_cy
+
+	var build_matrix_rx = var build_matrix_uy * var build_matrix_nz - var build_matrix_uz * var build_matrix_ny
+	var build_matrix_ry = var build_matrix_uz * var build_matrix_nx - var build_matrix_ux * var build_matrix_nz
+	var build_matrix_rz = var build_matrix_ux * var build_matrix_ny - var build_matrix_uy * var build_matrix_nx
+	
+	var build_matrix_rlen = sqrt(var build_matrix_rx * var build_matrix_rx + var build_matrix_ry * var build_matrix_ry + var build_matrix_rz * var build_matrix_rz)
+	if (var build_matrix_rlen > 0.0)
+	{
+		var build_matrix_rx = var build_matrix_rx / var build_matrix_rlen
+		var build_matrix_ry = var build_matrix_ry / var build_matrix_rlen
+		var build_matrix_rz = var build_matrix_rz / var build_matrix_rlen
+	}
+
+	var build_matrix_fx = var build_matrix_ry * var build_matrix_uz - var build_matrix_rz * var build_matrix_uy
+	var build_matrix_fx = var build_matrix_rz * var build_matrix_ux - var build_matrix_rx * var build_matrix_uz
+	var build_matrix_fx = var build_matrix_rx * var build_matrix_uy - var build_matrix_ry * var build_matrix_ux
+	
+	var m00 = var build_matrix_rx
+	var m01 = var build_matrix_ry
+	var m02 = var build_matrix_rz
+	var m10 = var build_matrix_ux
+	var m11 = var build_matrix_uy
+	var m12 = var build_matrix_uz
+	var m20 = var build_matrix_fx
+	var m21 = var build_matrix_fy
+	var m22 = var build_matrix_fz
+}
+
+on_tick
+{
+	
+}

@@ -1,0 +1,46 @@
+
+
+
+on_tick
+{
+	define var fractional scale
+	var scale = -30.0
+	if (out reverse.is_pressed)
+	{
+		var scale = 30.0
+	}
+	
+	in FL.target_rps = out FL.rps * -1.0
+	in FR.target_rps = out FR.rps * -1.0
+	in BL.target_rps = out BL.rps * -1.0
+	in BR.target_rps = out BR.rps * -1.0
+	
+	if (out front.is_pressed)
+	{
+		in FL.target_rps = var scale
+		in FR.target_rps = var scale
+	}
+	if (out left.is_pressed)
+	{
+		in FL.target_rps = var scale
+		in BL.target_rps = var scale
+	}
+	if (out right.is_pressed)
+	{
+		in FR.target_rps = var scale
+		in BR.target_rps = var scale
+	}
+	if (out back.is_pressed)
+	{
+		in BL.target_rps = var scale
+		in BR.target_rps = var scale
+	}
+	
+	if (out all.is_pressed)
+	{
+		in FL.target_rps = var scale
+		in FR.target_rps = var scale
+		in BL.target_rps = var scale
+		in BR.target_rps = var scale
+	}
+}

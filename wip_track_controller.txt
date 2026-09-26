@@ -1,0 +1,52 @@
+define var bool Flag1
+define var bool Active
+on_tick
+{
+	if (out Button.is_pressed && ! (var Flag1))
+	{
+		var Active = ! (var Active)
+		var Flag1 = true
+	}
+	elseif (! (out Button.is_pressed) && var Flag1)
+	{
+		var Flag1 = false
+	}
+	if (var Active)
+	{
+		in Button.is_illuminated = true
+		in Electric_Motor.target_rps = (out Steering_Wheel.right_pedal - out Steering_Wheel.left_pedal) * 2.0
+	}
+	else
+	{
+		in Button.is_illuminated = false
+		in Electric_Motor.target_rps = 0.0
+	}
+	if ((out Steering_Wheel.steering < -0.1) || (out Steering_Wheel.steering > 0.1))
+	{
+		in Dif.input = 1.0
+		if (out Steering_Wheel.steering > 0.0)
+		{
+			in Right_brake.input = abs (out Steering_Wheel.steering * 0.05)
+			in Left_brake.input = 0.0
+		}
+		else
+		{
+			in Left_brake.input = abs (out Steering_Wheel.steering * 0.05)
+			in Right_brake.input = 0.0
+		}
+	}
+	else
+	{
+		in Dif.input = 0.0
+		if (var Active)
+		{
+			in Left_brake.input = 0.0
+			in Right_brake.input = 0.0
+		}
+		else
+		{
+			in Left_brake.input = 0.05
+			in Right_brake.input = 0.05
+		}
+	}
+}

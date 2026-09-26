@@ -1,0 +1,10 @@
+on_tick
+{
+	define var fractional motor
+	var motor = 1.0
+	
+	in MotorFL.target_rps = var motor * -1.0
+	in MotorFR.target_rps = var motor
+	in MotorBL.target_rps = var motor
+	in MotorBR.target_rps = var motor * -1.0
+}

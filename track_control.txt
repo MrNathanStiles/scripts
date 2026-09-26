@@ -1,0 +1,53 @@
+on_tick
+{
+	define var fractional forward
+	define var fractional turn
+	define var fractional left
+	define var fractional right
+	define var fractional abs_left
+	define var fractional abs_right
+	define var fractional abs_rps_left
+	define var fractional abs_rps_right
+	define var fractional brake_left
+	define var fractional brake_right
+	
+	var forward = out Stick.pitch
+	var turn = out Stick.roll
+	var left = var forward + var turn
+	var right = var forward - var turn
+	
+	var brake_left = 0.0
+	var brake_right = 0.0
+	
+	var abs_rps_left = abs (out MotorBL.rps)
+	var abs_rps_right = abs (out MotorBR.rps)
+	
+	
+	var abs_left = abs (var left)
+	var abs_right = abs (var right)
+	
+	if (var abs_rps_left > (var abs_left + 0.2))
+	{
+		var brake_left = (var abs_rps_left - var abs_left) / 30.0
+	}
+
+	if (var abs_rps_right > (var abs_right + 0.2))
+	{
+		var brake_right = (var abs_rps_right - var abs_right) / 30.0
+	}
+
+	if ((var abs_left < 0.1) && (var abs_right < 0.1))
+	{
+		var brake_left = 1.0
+		var brake_right = 1.0
+	}
+	
+	in MotorBL.target_rps = var left * 30.0
+	in MotorBR.target_rps = var right * 30.0
+	in MotorFL.target_rps = var left * 30.0
+	in MotorFR.target_rps = var right * 30.0
+	in BrakeBL.input = var brake_left
+	in BrakeBR.input = var brake_right
+	in BrakeFL.input = var brake_left
+	in BrakeFR.input = var brake_right
+}

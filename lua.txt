@@ -1,0 +1,72 @@
+local tau = math.pi * 2.0
+-- Helper function to convert degrees to radians
+local function degToRad(deg)
+    return deg * math.pi / 180.0
+end
+
+local function compassToRad(compass)
+    return degToRad(compass + 360.0) % tau
+end
+
+local function forwardTiltToRad(tilt)
+    tilt = degToRad(tilt) - math.pi / 2.0
+end
+
+
+-- 1. Function to build the orientation matrix from Yaw, Pitch, and Roll (in degrees)
+function GetRotationMatrix(compass, left, up, forward)
+
+    local radYaw = compass * math.pi / 180
+
+    local sf = math.sin(forward * math.pi / 180)
+    local sl = math.sin(left * math.pi / 180)
+    local su = math.sin(up * math.pi / 180)
+
+    local sy = math.sin(radYaw)
+    local cy = math.cos(radYaw)
+    local R = {}
+
+    -- 3. Construct the 3x3 orientation matrix directly
+    R[1] = su * sy + sl * cy
+    R[2] = -su * cy + sl * sy
+    R[3] = sf * sy
+
+    R[4] = sl
+    R[5] = su
+    R[6] = -sf
+
+    R[7] = -su * cy + sl * sy
+    R[8] = su * sy + sl * cy
+    R[9] = sf * cy
+
+    return R
+end
+
+-- 2. Function to convert a vector from Local to World space
+-- Multiplies: WorldVector = Matrix * LocalVector
+function LocalToWorld(matrix, localVector)
+    local x = localVector.x
+    local y = localVector.y
+    local z = localVector.z
+
+    return {
+        x = matrix[1] * x + matrix[2] * y + matrix[3] * z,
+        y = matrix[4] * x + matrix[5] * y + matrix[6] * z,
+        z = matrix[7] * x + matrix[8] * y + matrix[9] * z
+    }
+end
+
+-- 3. Function to convert a vector from World to Local space
+-- Multiplies by the Transpose matrix (equivalent to Inverse for pure rotation)
+-- Multiplies: LocalVector = Matrix^T * WorldVector
+function WorldToLocal(matrix, worldVector)
+    local x = worldVector.x
+    local y = worldVector.y
+    local z = worldVector.z
+
+    return {
+        x = matrix[1] * x + matrix[4] * y + matrix[7] * z,
+        y = matrix[2] * x + matrix[5] * y + matrix[8] * z,
+        z = matrix[3] * x + matrix[6] * y + matrix[9] * z
+    }
+end
