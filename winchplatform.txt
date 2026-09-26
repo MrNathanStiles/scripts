@@ -14,6 +14,9 @@ on_tick
 	in FR.target_rps = out FR.rps * -1.0
 	in BL.target_rps = out BL.rps * -1.0
 	in BR.target_rps = out BR.rps * -1.0
+	in IR.target_rps = out IR.rps * -1.0
+	in IL.target_rps = out IL.rps * -1.0
+	
 	
 	if (out front.is_pressed)
 	{
@@ -42,5 +45,17 @@ on_tick
 		in FR.target_rps = var scale
 		in BL.target_rps = var scale
 		in BR.target_rps = var scale
+	}
+
+	if (out IRDOWN.is_pressed)
+	{
+		in IR.target_rps = -30.0
+		in IL.target_rps = -30.0
+	}
+
+		if (out IRUP.is_pressed)
+	{
+		in IR.target_rps = 30.0
+		in IL.target_rps = 30.0
 	}
 }
