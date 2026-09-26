@@ -51,12 +51,12 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	define var fractional build_matrix_fx
 	define var fractional build_matrix_fy
 	define var fractional build_matrix_fz
-
-	var build_matrix_ux = (param p_build_matrix_right - 90.0) / 90.0 
-	var build_matrix_uy = (param p_build_matrix_up - 90.0) / 90.0 
-	var build_matrix_uz = (param p_build_matrix_forward - 90.0) / 90.0 
 	
-	var build_matrix_ulen = sqrt(var build_matrix_ux * var build_matrix_ux + var build_matrix_uy * var build_matrix_uy + var build_matrix_uz * var build_matrix_uz)
+	var build_matrix_ux = (param p_build_matrix_right - 90.0) / 90.0
+	var build_matrix_uy = (param p_build_matrix_up - 90.0) / 90.0
+	var build_matrix_uz = (param p_build_matrix_forward - 90.0) / 90.0
+	
+	var build_matrix_ulen = sqrt (((var build_matrix_ux * var build_matrix_ux) + (var build_matrix_uy * var build_matrix_uy)) + (var build_matrix_uz * var build_matrix_uz))
 	
 	if (var build_matrix_ulen > 0.0)
 	{
@@ -64,30 +64,30 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 		var build_matrix_uy = var build_matrix_uy / var build_matrix_ulen
 		var build_matrix_uz = var build_matrix_uz / var build_matrix_ulen
 	}
-
-    var build_matrix_yaw = (param p_build_matrix_compass * var PI) / 180.0
-
-	var build_matrix_sy = sin(var build_matrix_yaw)
-	var build_matrix_cy = cos(var build_matrix_yaw)
-	var build_matrix_nx = var build_matrix_sy 
+	
+	var build_matrix_yaw = (param p_build_matrix_compass * var PI) / 180.0
+	
+	var build_matrix_sy = sin (var build_matrix_yaw)
+	var build_matrix_cy = cos (var build_matrix_yaw)
+	var build_matrix_nx = var build_matrix_sy
 	var build_matrix_ny = 0.0
 	var build_matrix_nz = var build_matrix_cy
-
-	var build_matrix_rx = var build_matrix_uy * var build_matrix_nz - var build_matrix_uz * var build_matrix_ny
-	var build_matrix_ry = var build_matrix_uz * var build_matrix_nx - var build_matrix_ux * var build_matrix_nz
-	var build_matrix_rz = var build_matrix_ux * var build_matrix_ny - var build_matrix_uy * var build_matrix_nx
 	
-	var build_matrix_rlen = sqrt(var build_matrix_rx * var build_matrix_rx + var build_matrix_ry * var build_matrix_ry + var build_matrix_rz * var build_matrix_rz)
+	var build_matrix_rx = (var build_matrix_uy * var build_matrix_nz) - (var build_matrix_uz * var build_matrix_ny)
+	var build_matrix_ry = (var build_matrix_uz * var build_matrix_nx) - (var build_matrix_ux * var build_matrix_nz)
+	var build_matrix_rz = (var build_matrix_ux * var build_matrix_ny) - (var build_matrix_uy * var build_matrix_nx)
+	
+	var build_matrix_rlen = sqrt (((var build_matrix_rx * var build_matrix_rx) + (var build_matrix_ry * var build_matrix_ry)) + (var build_matrix_rz * var build_matrix_rz))
 	if (var build_matrix_rlen > 0.0)
 	{
 		var build_matrix_rx = var build_matrix_rx / var build_matrix_rlen
 		var build_matrix_ry = var build_matrix_ry / var build_matrix_rlen
 		var build_matrix_rz = var build_matrix_rz / var build_matrix_rlen
 	}
-
-	var build_matrix_fx = var build_matrix_ry * var build_matrix_uz - var build_matrix_rz * var build_matrix_uy
-	var build_matrix_fx = var build_matrix_rz * var build_matrix_ux - var build_matrix_rx * var build_matrix_uz
-	var build_matrix_fx = var build_matrix_rx * var build_matrix_uy - var build_matrix_ry * var build_matrix_ux
+	
+	var build_matrix_fx = (var build_matrix_ry * var build_matrix_uz) - (var build_matrix_rz * var build_matrix_uy)
+	var build_matrix_fx = (var build_matrix_rz * var build_matrix_ux) - (var build_matrix_rx * var build_matrix_uz)
+	var build_matrix_fx = (var build_matrix_rx * var build_matrix_uy) - (var build_matrix_ry * var build_matrix_ux)
 	
 	var m00 = var build_matrix_rx
 	var m01 = var build_matrix_ry
@@ -100,7 +100,23 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	var m22 = var build_matrix_fz
 }
 
+define function to_local (fractional to_local_x, fractional to_local_y, fractional to_local_z)
+{
+	define var fractional to_local_tx
+	define var fractional to_local_ty
+	define var fractional to_local_tz
+
+	var to_local_tx = var m00 * param to_local_x + var m10 * param to_local_y + var m20 * param to_local_z
+	var to_local_ty = var m01 * param to_local_x + var m11 * param to_local_y + var m21 * param to_local_z
+	var to_local_tz = var m02 * param to_local_x + var m12 * param to_local_y + var m22 * param to_local_z
+	
+	param to_local_x = var to_local_tx
+	param to_local_y = var to_local_ty
+	param to_local_z = var to_local_tz
+}
+
 on_tick
 {
+	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
 	
 }
