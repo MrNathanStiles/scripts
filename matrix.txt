@@ -1,8 +1,4 @@
-
-
-
 define var fractional PI
-define var fractional TAU
 
 define var fractional m00
 define var fractional m01
@@ -223,8 +219,5 @@ on_tick
 	
 	call vec_len (var on_tick_right_x, var on_tick_right_y, var on_tick_right_z, var on_tick_len)
 	in disp_right_len.display_value = var on_tick_len
-	
-	
-	
 	
 }
