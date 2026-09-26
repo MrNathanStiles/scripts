@@ -31,6 +31,23 @@ var m20 = 0.0
 var m21 = 0.0
 var m22 = 1.0
 
+define function vec_dot (fractional vec_dot_x1, fractional vec_dot_y1, fractional vec_dot_z1, fractional vec_dot_x2, fractional vec_dot_y2, fractional vec_dot_z2, fractional vec_dot_result)
+{
+	param vec_dot_result = param vec_dot_x1 * param vec_dot_x2 + param vec_dot_y1 * param vec_dot_y2 + param vec_dot_z1 * param vec_dot_z2
+}
+
+define function vec_len_sq (fractional vec_len_sq_x, fractional vec_len_sq_y, fractional vec_len_sq_z, fractional vec_len_sq_result)
+{
+	call vec_dot(param vec_len_sq_x, param vec_len_sq_y, param vec_len_sq_z, param vec_len_sq_x, param vec_len_sq_y, param vec_len_sq_z, param vec_len_sq_result)
+}
+
+define function vec_len (fractional vec_len_x, fractional vec_len_y, fractional vec_len_z, fractional vec_len_result)
+{
+	call vec_len_sq(param vec_len_x, param vec_len_z, param vec_len_z, param vec_len_result)
+	param vec_len_result = sqrt(param vec_len_result)
+}
+
+
 define function build_matrix (fractional p_build_matrix_compass, fractional p_build_matrix_right, fractional p_build_matrix_up, fractional p_build_matrix_forward)
 {
 	
@@ -52,9 +69,9 @@ define function build_matrix (fractional p_build_matrix_compass, fractional p_bu
 	define var fractional build_matrix_fy
 	define var fractional build_matrix_fz
 	
-	var build_matrix_ux = (param p_build_matrix_right - 90.0) / 90.0
-	var build_matrix_uy = (param p_build_matrix_up - 90.0) / 90.0
-	var build_matrix_uz = (param p_build_matrix_forward - 90.0) / 90.0
+	var build_matrix_ux = (param p_build_matrix_right - 90.0) / -90.0
+	var build_matrix_uy = (param p_build_matrix_up - 90.0) / -90.0
+	var build_matrix_uz = (param p_build_matrix_forward - 90.0) / -90.0
 	
 	var build_matrix_ulen = sqrt (((var build_matrix_ux * var build_matrix_ux) + (var build_matrix_uy * var build_matrix_uy)) + (var build_matrix_uz * var build_matrix_uz))
 	
@@ -117,15 +134,59 @@ define function to_local (fractional to_local_x, fractional to_local_y, fraction
 
 on_tick
 {
+	define var fractional on_tick_forward_x
+	define var fractional on_tick_forward_y
+	define var fractional on_tick_forward_z
+
 	define var fractional on_tick_up_x
 	define var fractional on_tick_up_y
 	define var fractional on_tick_up_z
+
+	define var fractional on_tick_right_x
+	define var fractional on_tick_right_y
+	define var fractional on_tick_right_z
+
+	define var fractional on_tick_len
+	
+	var on_tick_forward_x = 0.0
+	var on_tick_forward_y = 0.0
+	var on_tick_forward_z = 1.0
 	
 	var on_tick_up_x = 0.0
 	var on_tick_up_y = 1.0
 	var on_tick_up_z = 0.0
 	
-	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
-	call to_local (var on_tick_up_x, var on_tick_up_y, var on_tick_up_z)
+	var on_tick_right_x = 1.0
+	var on_tick_right_y = 0.0
+	var on_tick_right_z = 0.0
 	
+	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
+	call to_local (var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z)
+	call to_local (var on_tick_up_x, var on_tick_up_y, var on_tick_up_z)
+	call to_local (var on_tick_right_x, var on_tick_right_y, var on_tick_right_z)
+	
+	in disp_forward_x.display_value = var on_tick_forward_x
+	in disp_forward_y.display_value = var on_tick_forward_y
+	in disp_forward_z.display_value = var on_tick_forward_z
+	
+	in disp_up_x.display_value = var on_tick_up_x
+	in disp_up_y.display_value = var on_tick_up_y
+	in disp_up_z.display_value = var on_tick_up_z
+	
+	in disp_right_x.display_value = var on_tick_right_x
+	in disp_right_y.display_value = var on_tick_right_y
+	in disp_right_z.display_value = var on_tick_right_z
+
+	call vec_len(var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z, var on_tick_len)
+	in disp_forward_len.display_value = var on_tick_len
+
+	call vec_len(var on_tick_up_x, var on_tick_up_y, var on_tick_up_z, var on_tick_len)
+	in disp_up_len.display_value = var on_tick_len
+
+	call vec_len(var on_tick_right_x, var on_tick_right_y, var on_tick_right_z, var on_tick_len)
+	in disp_right_len.display_value = var on_tick_len
+
+
+	
+
 }
