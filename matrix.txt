@@ -106,9 +106,9 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 	var build_matrix_ry = 0.0
 	var build_matrix_rz = var build_matrix_sy
 	
-	var build_matrix_fx = (var build_matrix_rz * var build_matrix_uy) - (var build_matrix_ry * var build_matrix_uz)
-	var build_matrix_fy = (var build_matrix_rx * var build_matrix_uz) - (var build_matrix_rz * var build_matrix_ux)
-	var build_matrix_fz = (var build_matrix_ry * var build_matrix_ux) - (var build_matrix_rx * var build_matrix_uy)
+	var build_matrix_fx = (var build_matrix_ry * var build_matrix_uz) - (var build_matrix_rz * var build_matrix_uy)
+	var build_matrix_fy = (var build_matrix_rz * var build_matrix_ux) - (var build_matrix_rx * var build_matrix_uz)
+	var build_matrix_fz = (var build_matrix_rx * var build_matrix_uy) - (var build_matrix_ry * var build_matrix_ux)
 	
 	call vec_len (var build_matrix_fx, var build_matrix_fy, var build_matrix_fz, var build_matrix_rlen)
 	if (var build_matrix_rlen > 0.0)
