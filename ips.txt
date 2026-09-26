@@ -105,10 +105,10 @@ define function to_local (fractional to_local_x, fractional to_local_y, fraction
 	define var fractional to_local_tx
 	define var fractional to_local_ty
 	define var fractional to_local_tz
-
-	var to_local_tx = var m00 * param to_local_x + var m10 * param to_local_y + var m20 * param to_local_z
-	var to_local_ty = var m01 * param to_local_x + var m11 * param to_local_y + var m21 * param to_local_z
-	var to_local_tz = var m02 * param to_local_x + var m12 * param to_local_y + var m22 * param to_local_z
+	
+	var to_local_tx = ((var m00 * param to_local_x) + (var m10 * param to_local_y)) + (var m20 * param to_local_z)
+	var to_local_ty = ((var m01 * param to_local_x) + (var m11 * param to_local_y)) + (var m21 * param to_local_z)
+	var to_local_tz = ((var m02 * param to_local_x) + (var m12 * param to_local_y)) + (var m22 * param to_local_z)
 	
 	param to_local_x = var to_local_tx
 	param to_local_y = var to_local_ty
@@ -117,6 +117,15 @@ define function to_local (fractional to_local_x, fractional to_local_y, fraction
 
 on_tick
 {
+	define var fractional on_tick_up_x
+	define var fractional on_tick_up_y
+	define var fractional on_tick_up_z
+	
+	var on_tick_up_x = 0.0
+	var on_tick_up_y = 1.0
+	var on_tick_up_z = 0.0
+	
 	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
+	call to_local (var on_tick_up_x, var on_tick_up_y, var on_tick_up_z)
 	
 }
