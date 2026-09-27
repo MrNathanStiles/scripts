@@ -5,7 +5,6 @@ define var fractional Ki
 define var fractional Kd
 define var fractional i
 define var fractional le
-define var fractional zz
 
 
 
