@@ -1,0 +1,58 @@
+
+define var bool last_pressed
+define var integer tick
+define var fractional motor_speed
+define var bool closed
+define var integer start
+define var integer age
+
+var last_pressed = false
+var tick = 0
+var motor_speed = 0.0
+var closed = true
+var start = 0
+
+
+on_tick
+{
+	var tick = var tick + 1
+	define var bool any_pressed
+	var any_pressed = false
+	var age = var tick - var start
+
+	if (var age > 60 && abs (out motor_cabin.rps) < 0.02)
+	{
+		var motor_speed = var motor_speed
+	}
+
+	if (out button_cabin_external.is_pressed)
+	{
+		var any_pressed = true
+	}
+	
+	if (out button_cabin_internal.is_pressed)
+	{
+		var any_pressed = true
+	}
+	
+	if (var any_pressed && ! (var last_pressed))
+	{
+		var start = var tick
+		if (var closed)
+		{
+			var motor_speed = -30.0
+		}
+		else
+		{
+			var motor_speed = 30.0
+		}
+		var closed = ! (var closed)
+	}
+
+	
+
+	var last_pressed = var any_pressed
+
+	in motor_cabin.target_rps = var motor_speed
+	
+}

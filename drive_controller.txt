@@ -1,0 +1,17 @@
+on_tick
+{
+	define var fractional scale
+	var scale = 30.0
+	
+	if (out reverse.is_pressed)
+	{
+		var scale = -30.0
+	}
+	var scale = var scale * out steering.right_pedal
+
+	in m1.target_rps = var scale
+	in m2.target_rps = var scale
+	in m3.target_rps = var scale
+	in m4.target_rps = var scale
+
+}

@@ -12,6 +12,14 @@ define var fractional m20
 define var fractional m21
 define var fractional m22
 
+define var fractional global_velo_x
+define var fractional global_velo_y
+define var fractional global_velo_z
+
+define var fractional global_position_x
+define var fractional global_position_y
+define var fractional global_position_z
+
 var PI = 3.141592
 
 var m00 = 1.0
@@ -26,13 +34,20 @@ var m20 = 0.0
 var m21 = 0.0
 var m22 = 1.0
 
+var global_velo_x = 0.0
+var global_velo_y = 0.0
+var global_velo_z = 0.0
+
+var global_position_x = 0.0
+var global_position_y = 0.0
+var global_position_z = 0.0
+
 define function vec_scale (fractional vec_scale_x, fractional vec_scale_y, fractional vec_scale_z, fractional vec_scale_n)
 {
 	param vec_scale_x = param vec_scale_x * param vec_scale_n
 	param vec_scale_y = param vec_scale_y * param vec_scale_n
 	param vec_scale_z = param vec_scale_z * param vec_scale_n
 }
-
 
 define function vec_dot (fractional vec_dot_x1, fractional vec_dot_y1, fractional vec_dot_z1, fractional vec_dot_x2, fractional vec_dot_y2, fractional vec_dot_z2, fractional vec_dot_result)
 {
@@ -66,71 +81,50 @@ define function vec_normalize (fractional vec_normalize_x, fractional vec_normal
 
 define function build_matrix (fractional build_matrix_compass, fractional build_matrix_right, fractional build_matrix_up, fractional build_matrix_forward)
 {
-	
 	define var fractional build_matrix_yaw
-	define var fractional build_matrix_ux
-	define var fractional build_matrix_uy
-	define var fractional build_matrix_uz
-	define var fractional build_matrix_ulen
 	define var fractional build_matrix_sy
 	define var fractional build_matrix_cy
-	define var fractional build_matrix_nx
-	define var fractional build_matrix_ny
-	define var fractional build_matrix_nz
-	define var fractional build_matrix_rx
-	define var fractional build_matrix_ry
-	define var fractional build_matrix_rz
-	define var fractional build_matrix_rlen
-	define var fractional build_matrix_fx
-	define var fractional build_matrix_fy
-	define var fractional build_matrix_fz
-	define var fractional build_matrix_rlen
 	
-	var build_matrix_ux = (90.0 - param build_matrix_right) / 90.0
-	var build_matrix_uy = (90.0 - param build_matrix_up) / 90.0
-	var build_matrix_uz = (90.0 - param build_matrix_forward) / 90.0
+	define var fractional build_matrix_ar
+	define var fractional build_matrix_au
+	define var fractional build_matrix_af
 	
-	call vec_len (var build_matrix_ux, var build_matrix_uy, var build_matrix_uz, var build_matrix_ulen)
-	if (var build_matrix_ulen > 0.0)
-	{
-		var build_matrix_ux = var build_matrix_ux / var build_matrix_ulen
-		var build_matrix_uy = var build_matrix_uy / var build_matrix_ulen
-		var build_matrix_uz = var build_matrix_uz / var build_matrix_ulen
-	}
+	define var fractional build_matrix_cr
+	define var fractional build_matrix_cu
+	define var fractional build_matrix_cf
+	define var fractional build_matrix_sf
+	define var fractional build_matrix_h
 	
 	var build_matrix_yaw = (param build_matrix_compass / 180.0) * var PI
 	var build_matrix_sy = sin (var build_matrix_yaw)
 	var build_matrix_cy = cos (var build_matrix_yaw)
 	
-	var build_matrix_rx = var build_matrix_cy
-	var build_matrix_ry = 0.0
-	var build_matrix_rz = 0.0 - var build_matrix_sy
+	var build_matrix_ar = (param build_matrix_right / 180.0) * var PI
+	var build_matrix_au = (param build_matrix_up / 180.0) * var PI
+	var build_matrix_af = (param build_matrix_forward / 180.0) * var PI
 	
-	var build_matrix_fx = (var build_matrix_ry * var build_matrix_uz) - (var build_matrix_rz * var build_matrix_uy)
-	var build_matrix_fy = (var build_matrix_rz * var build_matrix_ux) - (var build_matrix_rx * var build_matrix_uz)
-	var build_matrix_fz = (var build_matrix_rx * var build_matrix_uy) - (var build_matrix_ry * var build_matrix_ux)
+	var build_matrix_cr = cos (var build_matrix_ar)
+	var build_matrix_cu = cos (var build_matrix_au)
+	var build_matrix_cf = cos (var build_matrix_af)
+	var build_matrix_sf = sin (var build_matrix_af)
 	
-	call vec_len (var build_matrix_fx, var build_matrix_fy, var build_matrix_fz, var build_matrix_rlen)
-	if (var build_matrix_rlen > 0.0)
+	var build_matrix_h = var build_matrix_sf
+	if (var build_matrix_h == 0.0)
 	{
-		var build_matrix_fx = var build_matrix_fx / var build_matrix_rlen
-		var build_matrix_fy = var build_matrix_fy / var build_matrix_rlen
-		var build_matrix_fz = var build_matrix_fz / var build_matrix_rlen
+		var build_matrix_h = 0.0001
 	}
 	
-	var build_matrix_rx = (var build_matrix_uy * var build_matrix_fz) - (var build_matrix_uz * var build_matrix_fy)
-	var build_matrix_ry = (var build_matrix_uz * var build_matrix_fx) - (var build_matrix_ux * var build_matrix_fz)
-	var build_matrix_rz = (var build_matrix_ux * var build_matrix_fy) - (var build_matrix_uy * var build_matrix_fx)
+	var m02 = (0.0 - var build_matrix_sy) * var build_matrix_sf
+	var m12 = var build_matrix_cf
+	var m22 = var build_matrix_cy * var build_matrix_sf
 	
-	var m00 = var build_matrix_rx
-	var m01 = var build_matrix_ry
-	var m02 = var build_matrix_rz
-	var m10 = var build_matrix_ux
-	var m11 = var build_matrix_uy
-	var m12 = var build_matrix_uz
-	var m20 = var build_matrix_fx
-	var m21 = var build_matrix_fy
-	var m22 = var build_matrix_fz
+	var m00 = (var build_matrix_cy * var build_matrix_cu + var build_matrix_sy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
+	var m10 = var build_matrix_cr
+	var m20 = (var build_matrix_sy * var build_matrix_cu - var build_matrix_cy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
+	
+	var m01 = ((0.0 - var build_matrix_cy * var build_matrix_cr) + var build_matrix_sy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
+	var m11 = var build_matrix_cu
+	var m21 = ((0.0 - var build_matrix_sy * var build_matrix_cr) - var build_matrix_cy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
 }
 
 define function to_local (fractional to_local_x, fractional to_local_y, fractional to_local_z)
@@ -176,8 +170,18 @@ on_tick
 	define var fractional on_tick_right_x
 	define var fractional on_tick_right_y
 	define var fractional on_tick_right_z
+
+	define var fractional on_tick_acc_x
+    define var fractional on_tick_acc_y
+    define var fractional on_tick_acc_z
 	
 	define var fractional on_tick_len
+	define var fractional delta
+
+	var delta = 1.0 / 60.0
+
+	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
+
 	
 	var on_tick_forward_x = 0.0
 	var on_tick_forward_y = 0.0
@@ -191,7 +195,30 @@ on_tick
 	var on_tick_right_y = 0.0
 	var on_tick_right_z = 0.0
 	
-	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
+	
+
+	var on_tick_acc_x = out acc_right.acceleration
+    var on_tick_acc_y = out acc_up.acceleration
+    var on_tick_acc_z = out acc_forward.acceleration
+
+	call to_world (var on_tick_acc_x, var on_tick_acc_y, var on_tick_acc_z)
+
+	var global_velo_x = var global_velo_x + var on_tick_acc_x
+	var global_velo_y = var global_velo_y + var on_tick_acc_y
+	var global_velo_z = var global_velo_z + var on_tick_acc_z
+	
+	var global_position_x = var global_position_x + var global_velo_x * var delta
+	var global_position_y = var global_position_y + var global_velo_y * var delta
+	var global_position_z = var global_position_z + var global_velo_z * var delta
+
+	var global_position_y = out altitude.altitude
+	
+	in gps_x.display_value = var global_position_x
+	in gps_y.display_value = var global_position_y
+	in gps_z.display_value = var global_position_z
+	
+
+
 	call to_local (var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z)
 	call to_local (var on_tick_up_x, var on_tick_up_y, var on_tick_up_z)
 	call to_local (var on_tick_right_x, var on_tick_right_y, var on_tick_right_z)
