@@ -16,6 +16,17 @@ define var pid_data pid_alt
 define var pid_data pid_pitch
 define var pid_data pid_roll
 
+define function clamp (fractional clamp_value, fractional clamp_min, fractional clamp_max)
+{
+	if (param clamp_value < param clamp_min)
+	{
+		param clamp_value = param clamp_min
+	}
+	elseif (param clamp_value > param clamp_max)
+	{
+		param clamp_value = param clamp_max
+	}
+}
 define function make_pid (pid_data make_pid_data, fractional make_pid_p, fractional make_pid_i, fractional make_pid_d)
 {
 	param make_pid_data.Kp = param make_pid_p
@@ -29,17 +40,17 @@ define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractiona
 {
 	define var fractional run_pid_e
 	define var fractional run_pid_d
-
-	var run_pid_e = param run_pid_sp - param run_pid_sp
+	
+	var run_pid_e = param run_pid_sp - param run_pid_pv
 	param run_pid_data.i = param run_pid_data.i + var run_pid_e * param run_pid_data.Ki
 	var run_pid_d = var run_pid_e - param run_pid_data.le
 	param run_pid_data.le = var run_pid_e
 	param run_pid_result = var run_pid_e * param run_pid_data.Kp + param run_pid_data.i + var run_pid_d * param run_pid_data.Kd
 }
 
-define function sign (fractional a, fractional sign_result)
+define function sign (fractional sign_value, fractional sign_result)
 {
-	if (param a < 0.0)
+	if (param sign_value < 0.0)
 	{
 		param sign_result = -1.0
 	}
@@ -47,7 +58,6 @@ define function sign (fractional a, fractional sign_result)
 	{
 		param sign_result = 1.0
 	}
-	
 }
 
 var temp_collective = 0.3
@@ -56,9 +66,7 @@ var altitude = 0.0
 var target_altitude = 0.0
 var delta = 1.0 / 60.0
 
-call make_pid(var pid_alt, 0.01, 0.0001, 0.0)
-call make_pid(var pid_pitch, 0.01, 0.0001, 0.0)
-call make_pid(var pid_roll, 0.01, 0.0001, 0.0)
+
 
 on_tick
 {
@@ -80,33 +88,55 @@ on_tick
 	
 	if (var tick == 1)
 	{
-		var target_altitude = var altitude * 0.0
+		var target_altitude = var altitude + 23.0
 	}
 	
-	var altitude_error = var target_altitude - out altitude.altitude
-	call sign (var altitude_error, var altitude_error_direction)
-	var target_vertical_velocity = sqrt ((2.0 * var acceleration) * var altitude_error) * var altitude_error_direction
-	if (var target_vertical_velocity > 0.1)
+	if (out system_on.is_pressed)
 	{
-		var target_vertical_velocity = 0.1
-	}
-	elseif (var target_vertical_velocity < -0.1)
-	{
-		var target_vertical_velocity = -0.1
-	}
-	call run_pid(var pid_alt, var target_vertical_velocity, var vertical_velocity, var collective)
+		var altitude_error = var target_altitude - out altitude.altitude
+		call sign (var altitude_error, var altitude_error_direction)
+		var target_vertical_velocity = sqrt (abs ((2.0 * var acceleration) * var altitude_error)) * var altitude_error_direction
+		
+		if (var target_vertical_velocity > 0.1)
+		{
+			var target_vertical_velocity = 0.1
+		}
+		elseif (var target_vertical_velocity < -0.1)
+		{
+			var target_vertical_velocity = -0.1
+		}
 
-	call run_pid(var pid_pitch, out stick.pitch * 0.1, (90.0 - out tilt_forward.tilt) / 90.0, var pitch)
-	call run_pid(var pid_roll, out stick.roll * 0.1, (90.0 - out tilt_right.tilt) / 90.0, var roll)
-	
-	in rotor_fl.input = (var collective + var roll) - var pitch
-	in rotor_fr.input = (var collective - var roll) - var pitch
-	
-	in rotor_bl.input = (var collective + var roll) + var pitch
-	in rotor_br.input = (var collective - var roll) + var pitch
-	
-	var target_altitude = var target_altitude - (out stick.right_pedal * 0.01)
-	var target_altitude = var target_altitude + (out stick.left_pedal * 0.01)
-	
+		call run_pid (var pid_alt, var target_vertical_velocity, var vertical_velocity, var collective)
+		
+		
+		
+
+		#pitch going into the pid at + comes out as - when setpoint is 0
+		var pitch = (90.0 - out tilt_forward.tilt) / 90.0
+		call run_pid (var pid_pitch, out stick.pitch * 0.2, var pitch, var pitch)
+		
+		#roll going into the pid at + comes out as - when setpoint is 0
+		var roll = (90.0 - out tilt_right.tilt) / 90.0
+		call run_pid (var pid_roll, out stick.roll * 0.2, var roll, var roll)
+
+		in rotor_fl.input = (var collective - var roll) + var pitch
+		in rotor_fr.input = (var collective + var roll) + var pitch
+		
+		in rotor_bl.input = (var collective - var roll) - var pitch
+		in rotor_br.input = (var collective + var roll) - var pitch
+		
+		#var target_altitude = var target_altitude + (out stick.right_pedal * 0.001)
+		#var target_altitude = var target_altitude - (out stick.left_pedal * 0.001)
+	}
+	else
+	{
+		call make_pid(var pid_alt, 1.6, 0.0001, 0.5)
+		call make_pid(var pid_pitch, 1.6, 0.0004, 0.0)
+		call make_pid(var pid_roll, 1.0, 0.0001, 0.0)
+		in rotor_fl.input = 0.0
+		in rotor_fr.input = 0.0
+		in rotor_bl.input = 0.0
+		in rotor_br.input = 0.0
+	}
 	
 }
