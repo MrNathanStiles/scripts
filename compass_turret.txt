@@ -7,9 +7,9 @@ define var fractional le
 
 var target = 0.0
 
-var Kp = 1.0
-var Ki = 0.001
-var Kd = 113.0
+var Kp = 7.0
+var Ki = 0.0
+var Kd = 599.0
 
 var i = 0.0
 var le = 0.0
@@ -64,5 +64,7 @@ on_tick
 	in m2.target_rps = var error
 	in m3.target_rps = var error
 	in m4.target_rps = var error
+	in disp_heading.display_value = abs (out compass.north_angle)
+	in disp_target.display_value = abs (var target)
 	
 }
