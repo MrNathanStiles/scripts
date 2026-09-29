@@ -66,8 +66,6 @@ var altitude = 0.0
 var target_altitude = 0.0
 var delta = 1.0 / 60.0
 
-
-
 on_tick
 {
 	define var fractional roll
