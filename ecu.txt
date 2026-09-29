@@ -46,61 +46,61 @@ define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractiona
 	param run_pid_result = ((var run_pid_e * param run_pid_data.Kp) + param run_pid_data.i) + (var run_pid_d * param run_pid_data.Kd)
 }
 
-define function init()
+define function init ()
 {
-    call make_pid(var pid_throttle, 0.1, 0.01, 0.1)
+	call make_pid (var pid_throttle, 0.1, 0.01, 0.1)
 }
 
 on_tick
 {
-    define var fractional throttle
-    define var bool start
-
-    var tick = var tick + 1
-    
-    if (var tick == 1)
-    {
-        call init()
-    }
-
-    if (out run.is_pressed)
-    {
-        if (var state == var state_off)
-        {
-            if (out engine.rps > 7.0)
-            {
-                var state = var state_run
-            }
-            else
-            {
-                var state = var state_start
-            }
-        }
-        elseif (var state == var state_start)
-        {
-            var start = true
-            var throttle = 1.0
-            if (out engine.rps > 7.0)
-            {
-                var state = var state_run
-            }
-        }
-        elseif (var state == var state_run)
-        {
-            call run_pid(var pid_throttle, 12.0, out engine.rps, var throttle)
-        }
-    }
-    else
-    {
-        call init()
-    }
-
-    if (var start)
-    {
-        in starter.target_rps = 30.0
-    }
-    else
-    {
-        in starter.target_rps = 0.0
-    }
+	define var fractional throttle
+	define var bool start
+	
+	var tick = var tick + 1
+	
+	if (var tick == 1)
+	{
+		call init ()
+	}
+	
+	if (out run.is_pressed)
+	{
+		if (var state == var state_off)
+		{
+			if (out engine.rps > 7.0)
+			{
+				var state = var state_run
+			}
+			else
+			{
+				var state = var state_start
+			}
+		}
+		elseif (var state == var state_start)
+		{
+			var start = true
+			var throttle = 1.0
+			if (out engine.rps > 7.0)
+			{
+				var state = var state_run
+			}
+		}
+		elseif (var state == var state_run)
+		{
+			call run_pid (var pid_throttle, 12.0, out engine.rps, var throttle)
+		}
+	}
+	else
+	{
+		call init ()
+	}
+	
+	if (var start)
+	{
+		in starter.target_rps = 30.0
+	}
+	else
+	{
+		in starter.target_rps = 0.0
+	}
 }
