@@ -1,0 +1,33 @@
+define type pid_data
+{
+	define member fractional Kp
+	define member fractional Ki
+	define member fractional Kd
+	define member fractional i
+	define member fractional le
+}
+
+define var fractional PI
+
+var PI = 3.141592
+
+define function make_pid (pid_data make_pid_data, fractional make_pid_p, fractional make_pid_i, fractional make_pid_d)
+{
+	param make_pid_data.Kp = param make_pid_p
+	param make_pid_data.Ki = param make_pid_i
+	param make_pid_data.Kd = param make_pid_d
+	param make_pid_data.i = 0.0
+	param make_pid_data.le = 0.0
+}
+
+define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractional run_pid_pv, fractional run_pid_result)
+{
+	define var fractional run_pid_e
+	define var fractional run_pid_d
+	
+	var run_pid_e = param run_pid_sp - param run_pid_pv
+	param run_pid_data.i = param run_pid_data.i + (var run_pid_e * param run_pid_data.Ki)
+	var run_pid_d = var run_pid_e - param run_pid_data.le
+	param run_pid_data.le = var run_pid_e
+	param run_pid_result = ((var run_pid_e * param run_pid_data.Kp) + param run_pid_data.i) + (var run_pid_d * param run_pid_data.Kd)
+}

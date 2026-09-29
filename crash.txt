@@ -1,0 +1,10 @@
+define type my_type
+{
+}
+define function my_function(my_type my_data)
+{
+}
+on_tick
+{
+    call my_function(var my_type)
+}

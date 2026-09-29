@@ -1,4 +1,5 @@
 define var fractional PI
+define var fractional delta
 
 define type pid_data
 {
@@ -10,33 +11,51 @@ define type pid_data
 }
 
 var PI = 3.141592
+var delta = 1.0 / 60.0
 
-define function atan2(fractional atan2_y, fractional atan2_x, fractional atan2_result)
+define function atan2 (fractional atan2_y, fractional atan2_x, fractional atan2_result)
 {
 	if (param atan2_x > 0.0)
 	{
-        param atan2_result = atan (param atan2_y / param atan2_x)
-    }
-    elseif ((param atan2_x < 0.0) && (param atan2_y >= 0.0))
+		param atan2_result = atan (param atan2_y / param atan2_x)
+	}
+	elseif ((param atan2_x < 0.0) && (param atan2_y >= 0.0))
 	{
-        param atan2_result = atan (param atan2_y / param atan2_x) + var PI
-    }
-    elseif ((param atan2_x < 0.0) && (param atan2_y < 0.0))
+		param atan2_result = atan (param atan2_y / param atan2_x) + var PI
+	}
+	elseif ((param atan2_x < 0.0) && (param atan2_y < 0.0))
 	{
-        param atan2_result = atan (param atan2_y / param atan2_x) - var PI
-    }
-    elseif ((param atan2_x == 0.0) && (param atan2_y > 0.0))
+		param atan2_result = atan (param atan2_y / param atan2_x) - var PI
+	}
+	elseif ((param atan2_x == 0.0) && (param atan2_y > 0.0))
 	{
-        param atan2_result = var PI / 2.0
-    }
-    elseif ((param atan2_x == 0.0) && (param atan2_y < 0.0))
+		param atan2_result = var PI / 2.0
+	}
+	elseif ((param atan2_x == 0.0) && (param atan2_y < 0.0))
 	{
-        param atan2_result = 0.0 - (var PI / 2.0)
-    }
-    else
+		param atan2_result = 0.0 - (var PI / 2.0)
+	}
+	else
 	{
-        param atan2_result = 0.0
-    }
+		param atan2_result = 0.0
+	}
+}
+
+define function clamp (fractional clamp_value, fractional clamp_min, fractional clamp_max)
+{
+	if (param clamp_value < param clamp_min)
+	{
+		param clamp_value = param clamp_min
+	}
+	elseif (param clamp_value > param clamp_max)
+	{
+		param clamp_value = param clamp_max
+	}
+}
+
+define function lerp (fractional lerp_a, fractional lerp_b, fractional lerp_time, fractional lerp_result)
+{
+	param lerp_result = param lerp_a + (param lerp_b - param lerp_a) * param lerp_time
 }
 
 define function make_pid (pid_data make_pid_data, fractional make_pid_p, fractional make_pid_i, fractional make_pid_d)
@@ -54,10 +73,10 @@ define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractiona
 	define var fractional run_pid_d
 	
 	var run_pid_e = param run_pid_sp - param run_pid_pv
-	param run_pid_data.i = param run_pid_data.i + var run_pid_e * param run_pid_data.Ki
+	param run_pid_data.i = param run_pid_data.i + (var run_pid_e * param run_pid_data.Ki)
 	var run_pid_d = var run_pid_e - param run_pid_data.le
 	param run_pid_data.le = var run_pid_e
-	param run_pid_result = var run_pid_e * param run_pid_data.Kp + param run_pid_data.i + var run_pid_d * param run_pid_data.Kd
+	param run_pid_result = ((var run_pid_e * param run_pid_data.Kp) + param run_pid_data.i) + (var run_pid_d * param run_pid_data.Kd)
 }
 
 define function fmod (fractional fmod_a, fractional fmod_b, fractional fmod_result)
@@ -77,9 +96,9 @@ define function fmod (fractional fmod_a, fractional fmod_b, fractional fmod_resu
 define function wrap (fractional wrap_target, fractional wrap_current, fractional wrap_result)
 {
 	param wrap_result = param wrap_target - param wrap_current
-	call fmod(param wrap_result, 1.0, param wrap_result)
+	call fmod (param wrap_result, 1.0, param wrap_result)
 	param wrap_result = param wrap_result + 1.5
-	call fmod(param wrap_result, 1.0, param wrap_result)
+	call fmod (param wrap_result, 1.0, param wrap_result)
 	param wrap_result = param wrap_result - 0.5
 }
 
@@ -121,46 +140,55 @@ var target_angle = 0.0
 # 12.6mm per revolution
 # 8cm per voxel
 # radius (16(voxels) x 8(cm) * 10(mm per cm)) / 12.6(mm per revolution)
-var radius = (16.0 * 8.0 * 10.0) / 12.6
+var radius = ((16.0 * 8.0) * 10.0) / 12.6
+
 
 on_tick
 {
 	var tick = var tick + 1
-
+	
 	define var fractional base_north
 	define var fractional arm_north
 	define var fractional arm_error
+	define var fractional current_angle
 	define var fractional motor_stopped_speed
+	define var fractional temp_target_angle
+	define var fractional x
+	define var fractional y
+	
 	define var integer state_age
-
-	var motor_stopped_speed = 0.001
+	
+	var motor_stopped_speed = 0.1
 	var state_age = var tick - var state_start
-
+	
 	define var bool motors_stopped
-
+	
 	var motors_stopped = false
-
-	if (abs (out motor_x_0.rps) < var motor_stopped_speed && abs (out motor_x_1.rps)  < var motor_stopped_speed && abs(out motor_y_0.rps) < var motor_stopped_speed)
+	
+	if (((abs (out motor_x_0.rps) < var motor_stopped_speed) && (abs (out motor_x_1.rps) < var motor_stopped_speed)) && (abs (out motor_y_0.rps) < var motor_stopped_speed))
 	{
 		var motors_stopped = true
 	}
 
-	in disp_state.display_value = var state
+	call atan2 (var motor_y_0_position, var motor_x_0_position, var current_angle)
 	
-
-	var motor_x_0_position = var motor_x_0_position + out motor_x_0.rps
-	var motor_x_1_position = var motor_x_1_position + out motor_x_1.rps
-	var motor_y_0_position = var motor_y_0_position + out motor_y_0.rps
-
-	var base_north = out compass_base.north_angle / 180.0
-	var arm_north = out compass_arm.north_angle / 180.0
+	
+	
+	
+	var motor_x_0_position = var motor_x_0_position + out motor_x_0.rps * var delta
+	var motor_x_1_position = var motor_x_1_position + out motor_x_1.rps * var delta
+	var motor_y_0_position = var motor_y_0_position + out motor_y_0.rps * var delta
+	
+	#left of north is positive
+	var base_north = out compass_base.north_angle / 360.0
+	var arm_north = out compass_arm.north_angle / 360.0
 	call wrap (var base_north, var arm_north, var arm_error)
-
+	
 	# arm_error - is left(above in atan2 view) of base
 	# arm_error + is right(below in atan2 view) of base
 	# turret center to base compass direction is x = +1, y = 0
 	
-
+	
 	in disp_arm_error.display_value = var arm_error
 	
 	if (var state == var state_run)
@@ -172,8 +200,8 @@ on_tick
 		var motor_x_0_position = var radius * cos (var arm_error * var PI)
 		var motor_x_1_position = var motor_x_0_position
 		var motor_y_0_position = var radius * sin (var arm_error * var PI)
-
-		call atan2 (var motor_y_0_position, var motor_x_0_position, var target_angle)
+		
+		var target_angle = 0.0
 		
 		in motor_x_0.target_rps = out motor_x_0.rps * -1.0
 		in motor_x_1.target_rps = out motor_x_1.rps * -1.0
@@ -182,7 +210,8 @@ on_tick
 		{
 			if (var state_age > 60)
 			{
-				#var state = var state_calibrate_right
+				var state = var state_calibrate_right
+				var state_start = var tick
 			}
 		}
 		else
@@ -192,19 +221,50 @@ on_tick
 	}
 	elseif (var state == var state_calibrate_right)
 	{
+		#var state = var state_calibrate_center
+		#var state_start = var tick
+
+		if (abs (var arm_error) < var PI / 2.0)
+		{
+			var state = var state_calibrate_center
+			var state_start = var tick
+		}
+		else
+		{
+			call lerp(var current_angle, var target_angle, 0.1, var temp_target_angle)
+			var x = var radius * cos (var temp_target_angle)
+			var y = var radius * sin (var temp_target_angle)
+			in motor_x_0.target_rps = (var x - var motor_x_0_position) * -1.0
+			in motor_x_1.target_rps = (var x - var motor_x_1_position) * -1.0
+			in motor_y_0.target_rps = (var y - var motor_y_0_position) * 1.0
+		}
+
+
 		
 	}
 	elseif (var state == var state_calibrate_center)
 	{
-
+		call lerp(var current_angle, var target_angle, 0.1, var temp_target_angle)
+		var x = var radius * cos (var temp_target_angle)
+		var y = var radius * sin (var temp_target_angle)
+		in motor_x_0.target_rps = (var x - var motor_x_0_position) * -11.0
+		in motor_x_1.target_rps = (var x - var motor_x_1_position) * -11.0
+		in motor_y_0.target_rps = (var y - var motor_y_0_position) * 11.0
 	}
+	
+	
+	
+	
+	in disp_state.display_value = to_fractional (var state)
 
+	# x motors - moves along + axis
+	# y motors + moves along + axis
+	
+	#in motor_x_0.target_rps = -1.0
+	#in motor_x_1.target_rps = -1.0
+	#in motor_y_0.target_rps = 1.0
 
-
-
-
-
-
-
+	
+	
 	
 }
