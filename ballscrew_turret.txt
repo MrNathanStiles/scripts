@@ -1,0 +1,73 @@
+define function fmod (fractional fmod_a, fractional fmod_b, fractional fmod_result)
+{
+	define var integer fmod_ta
+	define var integer fmod_tb
+	
+	var fmod_ta = to_integer (param fmod_a * 1000000.0)
+	var fmod_tb = to_integer (param fmod_b * 1000000.0)
+	param fmod_result = to_fractional (var fmod_ta % var fmod_tb) / 1000000.0
+}
+
+# trapdoor on stormworks discord
+# x = target
+# y = current
+# ((x-y)%1+1.5)%1-0.5
+define function wrap (fractional wrap_target, fractional wrap_current, fractional wrap_result)
+{
+	param wrap_result = param wrap_target - param wrap_current
+	call fmod(param wrap_result, 1.0, param wrap_result)
+	param wrap_result = param wrap_result + 1.5
+	call fmod(param wrap_result, 1.0, param wrap_result)
+	param wrap_result = param wrap_result - 0.5
+}
+
+define var bool calibrated
+define var fractional motor_x_0_position
+define var fractional motor_x_1_position
+define var fractional motor_y_0_position
+
+var calibrated = false
+
+var motor_x_0_position = 0.0
+var motor_x_1_position = 0.0
+var motor_y_0_position = 0.0
+
+in motor_x_0.is_reverse = true
+in motor_x_1.is_reverse = true
+
+# radius 16 x 8cm
+# compass - is looking east of north
+# compass + is looking west of north
+# compass / 180.0
+
+
+on_tick
+{
+	# 12.6mm per revolution
+	# 8cm per voxel
+
+	define var fractional base_north
+	define var fractional arm_north
+	define var fractional arm_error
+
+	var base_north = out compass_base.north_angle / 180.0
+	var arm_north = out compass_arm.north_angle / 180.0
+	call wrap (var base_north, var arm_north, var arm_error)
+
+	in disp_arm_error.display_value = var arm_error
+	
+	
+
+
+
+	var motor_x_0_position = var motor_x_0_position + out motor_x_0.rps
+	var motor_x_1_position = var motor_x_1_position + out motor_x_1.rps
+	var motor_y_0_position = var motor_y_0_position + out motor_y_0.rps
+
+
+
+	in motor_x_0.target_rps = -1.0
+	in motor_x_1.target_rps = -1.0
+	in motor_y_0.target_rps = 0.0
+	
+}
