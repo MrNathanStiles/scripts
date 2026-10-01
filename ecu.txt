@@ -16,7 +16,11 @@ define var integer state_off
 define var integer state_start
 define var integer state_run
 define var integer state
+define var fractional target_throttle
 
+define var fractional target_rps
+
+var target_rps = 50.0
 var state_off = 0
 var state_start = 1
 var state_run = 2
@@ -24,6 +28,18 @@ var state = var state_off
 var base_throttle = 0.0
 var PI = 3.141592
 var tick = 0
+
+define function clamp (fractional clamp_value, fractional clamp_min, fractional clamp_max)
+{
+	if (param clamp_value < param clamp_min)
+	{
+		param clamp_value = param clamp_min
+	}
+	elseif (param clamp_value > param clamp_max)
+	{
+		param clamp_value = param clamp_max
+	}
+}
 
 define function make_pid (pid_data make_pid_data, fractional make_pid_p, fractional make_pid_i, fractional make_pid_d)
 {
@@ -38,26 +54,30 @@ define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractiona
 {
 	define var fractional run_pid_e
 	define var fractional run_pid_d
-	
+
 	var run_pid_e = param run_pid_sp - param run_pid_pv
 	param run_pid_data.i = param run_pid_data.i + (var run_pid_e * param run_pid_data.Ki)
+	call clamp (param run_pid_data.i, 0.0, 0.5)
 	var run_pid_d = var run_pid_e - param run_pid_data.le
 	param run_pid_data.le = var run_pid_e
 	param run_pid_result = ((var run_pid_e * param run_pid_data.Kp) + param run_pid_data.i) + (var run_pid_d * param run_pid_data.Kd)
 }
 
+
+
 define function init ()
 {
-	call make_pid (var pid_throttle, 0.1, 0.01, 0.1)
+	call make_pid (var pid_throttle, 0.11, 0.01, 0.0)
+	var target_throttle = 0.0
 }
 
 on_tick
 {
-	define var fractional throttle
-    define var fractional rps
+	
+	define var fractional rps
 	define var bool start
 	
-    var rps = out engine.rps
+	var rps = out engine.rps
 	var tick = var tick + 1
 	
 	if (var tick == 1)
@@ -81,7 +101,7 @@ on_tick
 		elseif (var state == var state_start)
 		{
 			var start = true
-			var throttle = 1.0
+			var target_throttle = 1.0
 			if (out engine.rps > 7.0)
 			{
 				var state = var state_run
@@ -89,7 +109,14 @@ on_tick
 		}
 		elseif (var state == var state_run)
 		{
-			call run_pid (var pid_throttle, 12.0, var rps, var throttle)
+			if (var rps < 6.0)
+			{
+				var state = var state_off
+			}
+			else
+			{
+				call run_pid (var pid_throttle, var target_rps, var rps, var target_throttle)
+			}
 		}
 	}
 	else
@@ -105,4 +132,6 @@ on_tick
 	{
 		in starter.target_rps = 0.0
 	}
+	call clamp (var target_throttle, 0.0, 1.0)
+	in throttle.input = var target_throttle
 }

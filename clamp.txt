@@ -1,0 +1,11 @@
+define function clamp (fractional clamp_value, fractional clamp_min, fractional clamp_max)
+{
+	if (param clamp_value < param clamp_min)
+	{
+		param clamp_value = param clamp_min
+	}
+	elseif (param clamp_value > param clamp_max)
+	{
+		param clamp_value = param clamp_max
+	}
+}
