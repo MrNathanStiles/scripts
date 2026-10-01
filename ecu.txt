@@ -20,7 +20,7 @@ define var fractional target_throttle
 
 define var fractional target_rps
 
-var target_rps = 50.0
+var target_rps = 90.0
 var state_off = 0
 var state_start = 1
 var state_run = 2
@@ -54,10 +54,10 @@ define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractiona
 {
 	define var fractional run_pid_e
 	define var fractional run_pid_d
-
+	
 	var run_pid_e = param run_pid_sp - param run_pid_pv
 	param run_pid_data.i = param run_pid_data.i + (var run_pid_e * param run_pid_data.Ki)
-	call clamp (param run_pid_data.i, 0.0, 0.5)
+	call clamp (param run_pid_data.i, 0.0, 1.0)
 	var run_pid_d = var run_pid_e - param run_pid_data.le
 	param run_pid_data.le = var run_pid_e
 	param run_pid_result = ((var run_pid_e * param run_pid_data.Kp) + param run_pid_data.i) + (var run_pid_d * param run_pid_data.Kd)
@@ -67,13 +67,12 @@ define function run_pid (pid_data run_pid_data, fractional run_pid_sp, fractiona
 
 define function init ()
 {
-	call make_pid (var pid_throttle, 0.11, 0.01, 0.0)
+	call make_pid (var pid_throttle, 1.0 / (var target_rps - 10.0), 0.001, 0.0)
 	var target_throttle = 0.0
 }
 
 on_tick
 {
-	
 	define var fractional rps
 	define var bool start
 	

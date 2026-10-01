@@ -1,0 +1,21 @@
+define var integer tick
+var tick = 0
+
+on_tick
+{
+	in motor.target_rps = 30.0
+	var tick = var tick + 1
+	if (var tick == 60)
+	{
+		var tick = 0
+	}
+	if (var tick < 1)
+	{
+		in step.input = 1.0
+	}
+	else
+	{
+		in step.input = 0.0
+	}
+	
+}
