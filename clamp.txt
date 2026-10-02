@@ -1,3 +1,4 @@
+#function
 define function clamp (fractional clamp_value, fractional clamp_min, fractional clamp_max)
 {
 	if (param clamp_value < param clamp_min)

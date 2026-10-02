@@ -1,0 +1,5 @@
+#function
+define function lerp (fractional lerp_a, fractional lerp_b, fractional lerp_time, fractional lerp_result)
+{
+	param lerp_result = param lerp_a + (param lerp_b - param lerp_a) * param lerp_time
+}

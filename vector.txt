@@ -1,0 +1,86 @@
+#define
+define type vector
+{
+	define member fractional x
+	define member fractional y
+	define member fractional z
+}
+
+#function
+define function vec_scale (vector vec_scale_vec, fractional vec_scale_n, vector vec_scale_result)
+{
+	param vec_scale_result.x = param vec_scale_vec.x * param vec_scale_n
+	param vec_scale_result.y = param vec_scale_vec.y * param vec_scale_n
+	param vec_scale_result.z = param vec_scale_vec.z * param vec_scale_n
+}
+
+define function vec_add (vector vec_add_a, vector vec_add_b, vector vec_add_result)
+{
+	param vec_add_result.x = param vec_add_a.x + param vec_add_b.x
+    param vec_add_result.y = param vec_add_a.y + param vec_add_b.y
+    param vec_add_result.z = param vec_add_a.z + param vec_add_b.z
+}
+
+define function vec_dot (vector vec_dot_a, vector vec_dot_b, fractional vec_dot_result)
+{
+	param vec_dot_result = ((param vec_dot_a.x * param vec_dot_b.x) + (param vec_dot_a.y * param vec_dot_b.y)) + (param vec_dot_a.z * param vec_dot_b.z)
+}
+
+define function vec_len_sq (vector vec_len_sq_a, fractional vec_len_sq_result)
+{
+	call vec_dot (param vec_len_sq_a, param vec_len_sq_a, param vec_len_sq_result)
+}
+
+define function vec_len (vector vec_len_a, fractional vec_len_result)
+{
+	call vec_len_sq (param vec_len_a, param vec_len_result)
+	param vec_len_result = sqrt (param vec_len_result)
+}
+
+define function vec_copy(vector vec_copy_a, vector vec_copy_result)
+{
+    param vec_copy_result.x = param vec_copy_a.x
+    param vec_copy_result.y = param vec_copy_a.y
+    param vec_copy_result.z = param vec_copy_a.z 
+}
+
+define function vec_normalize (vector vec_normalize_a, vector vec_normalize_result)
+{
+	define var fractional vec_normalize_len
+	var vec_normalize_len = 0.0
+	
+	call vec_len (param vec_normalize_a, var vec_normalize_len)
+	if (var vec_normalize_len == 0.0)
+	{
+		var vec_normalize_len = 1.0
+	}
+	var vec_normalize_len = 1.0 / var vec_normalize_len
+	call vec_scale (param vec_normalize_a, var vec_normalize_len, param vec_normalize_result)
+}
+
+define function vec_cross(vector vec_cross_a, vector vec_cross_b, vector vec_cross_result)
+{
+    param vec_cross_result.x = (param vec_cross_a.y * param vec_cross_b.z) - (param vec_cross_a.z * param vec_cross_b.y)
+    param vec_cross_result.y = (param vec_cross_a.z * param vec_cross_b.x) - (param vec_cross_a.x * param vec_cross_b.z)
+    param vec_cross_result.z = (param vec_cross_a.x * param vec_cross_b.y) - (param vec_cross_a.y * param vec_cross_b.x)
+}
+
+define function vec_rotate(vector vec_rotate_a, vector vec_rotate_axis, fractional vec_rotate_angle, vector vec_rotate_result)
+{
+    define var vector vec_rotate_cross
+    define var vector vec_rotate_temp
+    define var fractional vec_rotate_dot
+    define var fractional vec_rotate_st
+    define var fractional vec_rotate_ct
+    
+    var vec_rotate_st = sin (param vec_rotate_angle)
+    var vec_rotate_ct = cos (param vec_rotate_angle)
+
+    call vec_scale (param vec_rotate_a, var vec_rotate_ct, param vec_rotate_result)
+    call vec_cross (param vec_rotate_axis, param vec_rotate_a, var vec_rotate_cross)
+    call vec_scale (var vec_rotate_cross, var vec_rotate_st, var vec_rotate_cross)
+    call vec_dot (param vec_rotate_axis, param vec_rotate_a, var vec_rotate_dot)
+    call vec_scale(param vec_rotate_axis, var vec_rotate_dot * (1.0 - var vec_rotate_ct), var vec_rotate_temp)
+    call vec_add (param vec_rotate_result, var vec_rotate_cross, param vec_rotate_result)
+    call vec_add (param vec_rotate_result, var vec_rotate_temp, param vec_rotate_result)
+}

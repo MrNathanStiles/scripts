@@ -1,0 +1,8 @@
+
+#define
+define var fractional PI
+define var fractional delta
+
+#assign
+var PI = 3.141592
+var delta = 1.0 / 60.0

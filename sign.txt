@@ -1,0 +1,12 @@
+#function
+define function sign (fractional sign_value, fractional sign_result)
+{
+	if (param sign_value < 0.0)
+	{
+		param sign_result = -1.0
+	}
+	else
+	{
+		param sign_result = 1.0
+	}
+}

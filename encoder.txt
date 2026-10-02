@@ -1,37 +1,13 @@
+#use pid
+
 define var fractional position
 define var fractional target
-define var fractional Kp
-define var fractional Ki
-define var fractional Kd
-define var fractional i
-define var fractional le
-
-
 
 define var bool pressed
 
 var position = 0.0
 var target = 0.0
 var pressed = false
-
-var Kp = 1.0
-var Ki = 0.001
-var Kd = 19.0
-
-var i = 0.0
-var le = 0.0
-
-define function run (fractional run_sp, fractional run_pv, fractional run_result)
-{
-	define var fractional run_e
-	define var fractional run_d
-
-	var run_e = param run_sp - param run_pv
-	var i = var i + var run_e * var Ki
-	var run_d = (var run_e - var le)
-	var le = var run_e
-	param run_result =  var Kp * var run_e + var i + var Kd * var run_d
-}
 
 on_tick
 {

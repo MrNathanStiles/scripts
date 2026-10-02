@@ -1,0 +1,10 @@
+#function
+define function fmod (fractional fmod_a, fractional fmod_b, fractional fmod_result)
+{
+	define var integer fmod_ta
+	define var integer fmod_tb
+	
+	var fmod_ta = to_integer (param fmod_a * 1000000.0)
+	var fmod_tb = to_integer (param fmod_b * 1000000.0)
+	param fmod_result = to_fractional (var fmod_ta % var fmod_tb) / 1000000.0
+}

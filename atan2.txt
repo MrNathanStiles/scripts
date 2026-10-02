@@ -1,4 +1,5 @@
-var PI = 3.141592
+#use math.txt
+#function
 define function atan2(fractional a, fractional b, fractional c)
 {
 	if (param b > 0.0)
