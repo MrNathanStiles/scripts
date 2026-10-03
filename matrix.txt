@@ -1,42 +1,37 @@
 #use math
+#use vector
 
 #define
 define type matrix
 {
-	define var fractional m00
-	define var fractional m01
-	define var fractional m02
+	define member fractional m00
+	define member fractional m01
+	define member fractional m02
 
-	define var fractional m10
-	define var fractional m11
-	define var fractional m12
+	define member fractional m10
+	define member fractional m11
+	define member fractional m12
 
-	define var fractional m20
-	define var fractional m21
-	define var fractional m22
+	define member fractional m20
+	define member fractional m21
+	define member fractional m22
 
 }
 
-
-define var fractional global_velo_x
-define var fractional global_velo_y
-define var fractional global_velo_z
-
-define var fractional global_position_x
-define var fractional global_position_y
-define var fractional global_position_z
+define var matrix matrix_world
+define var vector global_velo
+define var vector global_position
 
 #assign
+var global_velo.x = 0.0
+var global_velo.y = 0.0
+var global_velo.z = 0.0
 
+var global_position.x = 0.0
+var global_position.y = 0.0
+var global_position.z = 0.0
 
-var global_velo_x = 0.0
-var global_velo_y = 0.0
-var global_velo_z = 0.0
-
-var global_position_x = 0.0
-var global_position_y = 0.0
-var global_position_z = 0.0
-
+call matrix_identity (var matrix_world)
 
 #function
 define function matrix_identity (matrix matrix_identity_matrix)
@@ -56,7 +51,13 @@ define function matrix_identity (matrix matrix_identity_matrix)
 
 }
 
-define function build_matrix (fractional build_matrix_compass, fractional build_matrix_right, fractional build_matrix_up, fractional build_matrix_forward)
+# cos(zero_deg) = 1
+# cos(neinty_deg) = 0.0007963267107332633
+# cos(one_eighty_deg) = -0.9999987317275395
+# so the up tilt sensor apparently gives the y component
+# so
+
+define function build_matrix (fractional build_matrix_compass, fractional build_matrix_right, fractional build_matrix_up, fractional build_matrix_forward, matrix build_matrix_result)
 {
 	define var fractional build_matrix_yaw
 	define var fractional build_matrix_sy
@@ -91,126 +92,96 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 		var build_matrix_h = 0.0001
 	}
 	
-	var m02 = (0.0 - var build_matrix_sy) * var build_matrix_sf
-	var m12 = var build_matrix_cf
-	var m22 = var build_matrix_cy * var build_matrix_sf
+	param build_matrix_result.m02 = (0.0 - var build_matrix_sy) * var build_matrix_sf
+	param build_matrix_result.m12 = var build_matrix_cf
+	param build_matrix_result.m22 = var build_matrix_cy * var build_matrix_sf
 	
-	var m00 = (var build_matrix_cy * var build_matrix_cu + var build_matrix_sy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
-	var m10 = var build_matrix_cr
-	var m20 = (var build_matrix_sy * var build_matrix_cu - var build_matrix_cy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
+	param build_matrix_result.m00 = (var build_matrix_cy * var build_matrix_cu + var build_matrix_sy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
+	param build_matrix_result.m10 = var build_matrix_cr
+	param build_matrix_result.m20 = (var build_matrix_sy * var build_matrix_cu - var build_matrix_cy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
 	
-	var m01 = ((0.0 - var build_matrix_cy * var build_matrix_cr) + var build_matrix_sy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
-	var m11 = var build_matrix_cu
-	var m21 = ((0.0 - var build_matrix_sy * var build_matrix_cr) - var build_matrix_cy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
+	param build_matrix_result.m01 = ((0.0 - var build_matrix_cy * var build_matrix_cr) + var build_matrix_sy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
+	param build_matrix_result.m11 = var build_matrix_cu
+	param build_matrix_result.m21 = ((0.0 - var build_matrix_sy * var build_matrix_cr) - var build_matrix_cy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
 }
 
-define function to_local (fractional to_local_x, fractional to_local_y, fractional to_local_z)
+define function to_local (vector to_local_a, vector to_local_result)
 {
-	define var fractional to_local_tx
-	define var fractional to_local_ty
-	define var fractional to_local_tz
+	define var vector to_local_temp
 	
-	var to_local_tx = ((var m00 * param to_local_x) + (var m10 * param to_local_y)) + (var m20 * param to_local_z)
-	var to_local_ty = ((var m01 * param to_local_x) + (var m11 * param to_local_y)) + (var m21 * param to_local_z)
-	var to_local_tz = ((var m02 * param to_local_x) + (var m12 * param to_local_y)) + (var m22 * param to_local_z)
-	
-	param to_local_x = var to_local_tx
-	param to_local_y = var to_local_ty
-	param to_local_z = var to_local_tz
+	var to_local_temp.x = ((var matrix_world.m00 * param to_local_a.x) + (var matrix_world.m10 * param to_local_a.y)) + (var matrix_world.m20 * param to_local_a.z)
+	var to_local_temp.y = ((var matrix_world.m01 * param to_local_a.x) + (var matrix_world.m11 * param to_local_a.y)) + (var matrix_world.m21 * param to_local_a.z)
+	var to_local_temp.z = ((var matrix_world.m02 * param to_local_a.x) + (var matrix_world.m12 * param to_local_a.y)) + (var matrix_world.m22 * param to_local_a.z)
+
+	call vec_copy(var to_local_temp, param to_local_result)
 }
 
-define function to_world (fractional to_world_x, fractional to_world_y, fractional to_world_z)
+define function to_world (vector to_world_a, vector to_world_result)
 {
-	define var fractional to_world_tx
-	define var fractional to_world_ty
-	define var fractional to_world_tz
-	
-	var to_world_tx = ((var m00 * param to_world_x) + (var m01 * param to_world_y)) + (var m02 * param to_world_z)
-	var to_world_ty = ((var m10 * param to_world_x) + (var m11 * param to_world_y)) + (var m12 * param to_world_z)
-	var to_world_tz = ((var m20 * param to_world_x) + (var m21 * param to_world_y)) + (var m22 * param to_world_z)
-	
-	param to_world_x = var to_world_tx
-	param to_world_y = var to_world_ty
-	param to_world_z = var to_world_tz
+	define var vector to_world_temp
+
+	var to_world_temp.x = ((var matrix_world.m00 * param to_world_a.x) + (var matrix_world.m01 * param to_world_a.y)) + (var matrix_world.m02 * param to_world_a.z)
+	var to_world_temp.y = ((var matrix_world.m10 * param to_world_a.x) + (var matrix_world.m11 * param to_world_a.y)) + (var matrix_world.m12 * param to_world_a.z)
+	var to_world_temp.z = ((var matrix_world.m20 * param to_world_a.x) + (var matrix_world.m21 * param to_world_a.y)) + (var matrix_world.m22 * param to_world_a.z)
+
+	call vec_copy(var to_world_temp, param to_world_result)
 }
 
 on_tick
 {
-	define var fractional on_tick_forward_x
-	define var fractional on_tick_forward_y
-	define var fractional on_tick_forward_z
+	define var vector on_tick_forward
+	define var vector on_tick_up
+	define var vector on_tick_right
+	define var vector on_tick_velo
 	
-	define var fractional on_tick_up_x
-	define var fractional on_tick_up_y
-	define var fractional on_tick_up_z
-	
-	define var fractional on_tick_right_x
-	define var fractional on_tick_right_y
-	define var fractional on_tick_right_z
 
-	define var fractional on_tick_acc_x
-    define var fractional on_tick_acc_y
-    define var fractional on_tick_acc_z
-	
+	define var vector on_tick_acc
 	define var fractional on_tick_len
-	define var fractional delta
+	
+	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt, var matrix_world)
+	
+	var on_tick_forward.x = 0.0
+	var on_tick_forward.y = 0.0
+	var on_tick_forward.z = 1.0
+	
+	var on_tick_up.x = 0.0
+	var on_tick_up.y = 1.0
+	var on_tick_up.z = 0.0
+	
+	var on_tick_right.x = 1.0
+	var on_tick_right.y = 0.0
+	var on_tick_right.z = 0.0
+	
+	var on_tick_acc.x = out acc_right.acceleration
+    var on_tick_acc.y = out acc_up.acceleration
+    var on_tick_acc.z = out acc_forward.acceleration
 
-	var delta = 1.0 / 60.0
+	call to_world (var on_tick_acc, var on_tick_acc)
+	call vec_add (var global_velo, var on_tick_acc, var global_velo)	
+	call vec_scale (var global_velo, var delta, var on_tick_velo)
+	call vec_add (var global_position, var on_tick_velo, var global_position)
+	
+	var global_position.y = out altitude.altitude
+	
+	in gps_x.display_value = var global_position.x
+	in gps_y.display_value = var global_position.y
+	in gps_z.display_value = var global_position.z
 
-	call build_matrix (out compass.north_angle, out tilt_right.tilt, out tilt_up.tilt, out tilt_forward.tilt)
-
+	call to_local (var on_tick_forward, var on_tick_forward)
+	call to_local (var on_tick_up, var on_tick_up)
+	call to_local (var on_tick_right, var on_tick_right)
 	
-	var on_tick_forward_x = 0.0
-	var on_tick_forward_y = 0.0
-	var on_tick_forward_z = 1.0
+	in disp_forward_x.display_value = var on_tick_forward.x
+	in disp_forward_y.display_value = var on_tick_forward.y
+	in disp_forward_z.display_value = var on_tick_forward.z
 	
-	var on_tick_up_x = 0.0
-	var on_tick_up_y = 1.0
-	var on_tick_up_z = 0.0
+	in disp_up_x.display_value = var on_tick_up.x
+	in disp_up_y.display_value = var on_tick_up.y
+	in disp_up_z.display_value = var on_tick_up.z
 	
-	var on_tick_right_x = 1.0
-	var on_tick_right_y = 0.0
-	var on_tick_right_z = 0.0
-	
-	
-
-	var on_tick_acc_x = out acc_right.acceleration
-    var on_tick_acc_y = out acc_up.acceleration
-    var on_tick_acc_z = out acc_forward.acceleration
-
-	call to_world (var on_tick_acc_x, var on_tick_acc_y, var on_tick_acc_z)
-
-	var global_velo_x = var global_velo_x + var on_tick_acc_x
-	var global_velo_y = var global_velo_y + var on_tick_acc_y
-	var global_velo_z = var global_velo_z + var on_tick_acc_z
-	
-	var global_position_x = var global_position_x + var global_velo_x * var delta
-	var global_position_y = var global_position_y + var global_velo_y * var delta
-	var global_position_z = var global_position_z + var global_velo_z * var delta
-
-	var global_position_y = out altitude.altitude
-	
-	in gps_x.display_value = var global_position_x
-	in gps_y.display_value = var global_position_y
-	in gps_z.display_value = var global_position_z
-	
-
-
-	call to_local (var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z)
-	call to_local (var on_tick_up_x, var on_tick_up_y, var on_tick_up_z)
-	call to_local (var on_tick_right_x, var on_tick_right_y, var on_tick_right_z)
-	
-	in disp_forward_x.display_value = var on_tick_forward_x
-	in disp_forward_y.display_value = var on_tick_forward_y
-	in disp_forward_z.display_value = var on_tick_forward_z
-	
-	in disp_up_x.display_value = var on_tick_up_x
-	in disp_up_y.display_value = var on_tick_up_y
-	in disp_up_z.display_value = var on_tick_up_z
-	
-	in disp_right_x.display_value = var on_tick_right_x
-	in disp_right_y.display_value = var on_tick_right_y
-	in disp_right_z.display_value = var on_tick_right_z
+	in disp_right_x.display_value = var on_tick_right.x
+	in disp_right_y.display_value = var on_tick_right.y
+	in disp_right_z.display_value = var on_tick_right.z
 	
 	#call vec_len (var on_tick_forward_x, var on_tick_forward_y, var on_tick_forward_z, var on_tick_len)
 	#in disp_forward_len.display_value = var on_tick_len
