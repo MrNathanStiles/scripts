@@ -1,5 +1,6 @@
 #use pid
 #use matrix
+
 define var integer tick
 define var pid_data pid_engine
 define var bool initialized
@@ -61,8 +62,10 @@ define function run_engine ()
 on_tick
 {
 	define var fractional collective
+	define var fractional compass
 	define var fractional pitch
 	define var fractional roll
+	
 
 	var tick = var tick + 1
 
@@ -72,7 +75,11 @@ on_tick
 	}
 
 	call run_engine()
-	
+
+	var compass = out compass.north_angle
+	var pitch = out tilt_forward.tilt
+	var roll = out tilt_right.tilt
+	call build_matrix(var compass, var pitch, var roll, var matrix_world)
 	
 	var collective = out collective_throttle.throttle
 	var pitch = out stick.pitch * -0.5

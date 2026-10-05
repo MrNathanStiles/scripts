@@ -57,61 +57,62 @@ define function matrix_identity (matrix matrix_identity_matrix)
 # so the up tilt sensor apparently gives the y component
 # so
 
-define function build_matrix (fractional build_matrix_compass, fractional build_matrix_right, fractional build_matrix_up, fractional build_matrix_forward, matrix build_matrix_result)
+define function build_matrix (fractional build_matrix_compass, fractional build_matrix_tilt_forward, fractional build_matrix_tilt_right, matrix build_matrix_result)
 {
-	define var fractional build_matrix_yaw
-	define var fractional build_matrix_sy
-	define var fractional build_matrix_cy
-	
-	define var fractional build_matrix_ar
-	define var fractional build_matrix_au
-	define var fractional build_matrix_af
-	
+	define var vector build_matrix_heading
+	define var vector build_matrix_up
+	define var vector build_matrix_right
+	define var fractional build_matrix_sr
 	define var fractional build_matrix_cr
-	define var fractional build_matrix_cu
-	define var fractional build_matrix_cf
-	define var fractional build_matrix_sf
-	define var fractional build_matrix_h
+	define var fractional build_matrix_sp
+	define var fractional build_matrix_cp
 	
-	var build_matrix_yaw = (param build_matrix_compass / 180.0) * var PI
-	var build_matrix_sy = sin (var build_matrix_yaw)
-	var build_matrix_cy = cos (var build_matrix_yaw)
 	
-	var build_matrix_ar = (param build_matrix_right / 180.0) * var PI
-	var build_matrix_au = (param build_matrix_up / 180.0) * var PI
-	var build_matrix_af = (param build_matrix_forward / 180.0) * var PI
+	param build_matrix_tilt_forward = ((param build_matrix_tilt_forward - 90.0) / 180.0) * var PI
+	param build_matrix_tilt_right = ((param build_matrix_tilt_right - 90.0) / 180.0) * var PI
+
+	var build_matrix_sr = sin (param build_matrix_tilt_right)
+	var build_matrix_cr = cos (param build_matrix_tilt_right)
+	var build_matrix_sp = sin (param build_matrix_tilt_forward)
+	var build_matrix_cp = cos (param build_matrix_tilt_forward)
 	
-	var build_matrix_cr = cos (var build_matrix_ar)
-	var build_matrix_cu = cos (var build_matrix_au)
-	var build_matrix_cf = cos (var build_matrix_af)
-	var build_matrix_sf = sin (var build_matrix_af)
+	param build_matrix_compass = (param build_matrix_compass / 180.0) * var PI
+
+	var build_matrix_heading.x = sin (param build_matrix_compass) * -1.0
+	var build_matrix_heading.y = 0.0
+	var build_matrix_heading.z = cos (param build_matrix_compass)
 	
-	var build_matrix_h = var build_matrix_sf
-	if (var build_matrix_h == 0.0)
-	{
-		var build_matrix_h = 0.0001
-	}
+
+	var build_matrix_up.x = var build_matrix_sr * -1.0
+	var build_matrix_up.y = var build_matrix_cp * var build_matrix_cr
+	var build_matrix_up.z = var build_matrix_sp * var build_matrix_cr
 	
-	param build_matrix_result.m02 = (0.0 - var build_matrix_sy) * var build_matrix_sf
-	param build_matrix_result.m12 = var build_matrix_cf
-	param build_matrix_result.m22 = var build_matrix_cy * var build_matrix_sf
+	call vec_cross (var build_matrix_up, var build_matrix_heading, var build_matrix_right)
+	call vec_cross (var build_matrix_right, var build_matrix_up, var build_matrix_heading)
 	
-	param build_matrix_result.m00 = (var build_matrix_cy * var build_matrix_cu + var build_matrix_sy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
-	param build_matrix_result.m10 = var build_matrix_cr
-	param build_matrix_result.m20 = (var build_matrix_sy * var build_matrix_cu - var build_matrix_cy * var build_matrix_cf * var build_matrix_cr) / var build_matrix_h
+	call vec_normalize (var build_matrix_heading, var build_matrix_heading)
+	call vec_normalize (var build_matrix_up, var build_matrix_up)
+	call vec_normalize (var build_matrix_right, var build_matrix_right)
 	
-	param build_matrix_result.m01 = ((0.0 - var build_matrix_cy * var build_matrix_cr) + var build_matrix_sy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
-	param build_matrix_result.m11 = var build_matrix_cu
-	param build_matrix_result.m21 = ((0.0 - var build_matrix_sy * var build_matrix_cr) - var build_matrix_cy * var build_matrix_cf * var build_matrix_cu) / var build_matrix_h
+	param build_matrix_result.m00 = var build_matrix_right.x
+	param build_matrix_result.m01 = var build_matrix_right.y
+	param build_matrix_result.m02 = var build_matrix_right.z
+	param build_matrix_result.m10 = var build_matrix_up.x
+	param build_matrix_result.m11 = var build_matrix_up.y
+	param build_matrix_result.m12 = var build_matrix_up.z
+	param build_matrix_result.m20 = var build_matrix_heading.x
+	param build_matrix_result.m21 = var build_matrix_heading.y
+	param build_matrix_result.m22 = var build_matrix_heading.z
+	
 }
 
 define function to_local (vector to_local_a, vector to_local_result)
 {
 	define var vector to_local_temp
 	
-	var to_local_temp.x = ((var matrix_world.m00 * param to_local_a.x) + (var matrix_world.m10 * param to_local_a.y)) + (var matrix_world.m20 * param to_local_a.z)
-	var to_local_temp.y = ((var matrix_world.m01 * param to_local_a.x) + (var matrix_world.m11 * param to_local_a.y)) + (var matrix_world.m21 * param to_local_a.z)
-	var to_local_temp.z = ((var matrix_world.m02 * param to_local_a.x) + (var matrix_world.m12 * param to_local_a.y)) + (var matrix_world.m22 * param to_local_a.z)
+	var to_local_temp.x = ((var matrix_world.m00 * param to_local_a.x) + (var matrix_world.m01 * param to_local_a.y)) + (var matrix_world.m02 * param to_local_a.z)
+	var to_local_temp.y = ((var matrix_world.m10 * param to_local_a.x) + (var matrix_world.m11 * param to_local_a.y)) + (var matrix_world.m12 * param to_local_a.z)
+	var to_local_temp.z = ((var matrix_world.m20 * param to_local_a.x) + (var matrix_world.m21 * param to_local_a.y)) + (var matrix_world.m22 * param to_local_a.z)
 
 	call vec_copy(var to_local_temp, param to_local_result)
 }
@@ -120,9 +121,9 @@ define function to_world (vector to_world_a, vector to_world_result)
 {
 	define var vector to_world_temp
 
-	var to_world_temp.x = ((var matrix_world.m00 * param to_world_a.x) + (var matrix_world.m01 * param to_world_a.y)) + (var matrix_world.m02 * param to_world_a.z)
-	var to_world_temp.y = ((var matrix_world.m10 * param to_world_a.x) + (var matrix_world.m11 * param to_world_a.y)) + (var matrix_world.m12 * param to_world_a.z)
-	var to_world_temp.z = ((var matrix_world.m20 * param to_world_a.x) + (var matrix_world.m21 * param to_world_a.y)) + (var matrix_world.m22 * param to_world_a.z)
+	var to_world_temp.x = ((var matrix_world.m00 * param to_world_a.x) + (var matrix_world.m10 * param to_world_a.y)) + (var matrix_world.m20 * param to_world_a.z)
+	var to_world_temp.y = ((var matrix_world.m01 * param to_world_a.x) + (var matrix_world.m11 * param to_world_a.y)) + (var matrix_world.m21 * param to_world_a.z)
+	var to_world_temp.z = ((var matrix_world.m02 * param to_world_a.x) + (var matrix_world.m12 * param to_world_a.y)) + (var matrix_world.m22 * param to_world_a.z)
 
 	call vec_copy(var to_world_temp, param to_world_result)
 }
