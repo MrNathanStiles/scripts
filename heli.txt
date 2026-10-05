@@ -65,7 +65,6 @@ on_tick
 	define var fractional compass
 	define var fractional pitch
 	define var fractional roll
-	
 
 	var tick = var tick + 1
 
