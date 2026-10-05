@@ -1,0 +1,120 @@
+define var integer tick
+define var fractional position
+define var fractional position_min
+define var fractional position_max
+define var integer direction
+define var fractional delta
+define var fractional range
+define var bool open
+
+define var fractional speed
+
+var tick = 0
+var position = 0.0
+var direction = -3
+var delta = 1.0 / 60.0
+var position_min = 1.0
+var position_max = -1.0
+var open = true
+var speed = 7.0
+
+on_tick
+{
+	define var bool stopped
+	
+	var tick = var tick + 1
+	var position = var position + out motor.rps
+	
+	if (var open)
+	{
+		if (var position > var position_max)
+		{
+			var position_max = var position
+		}
+		
+		if (var position < var position_min)
+		{
+			var position_min = var position
+		}
+	}
+	
+	if (abs (out motor.rps) < 0.03)
+	{
+		var stopped = true
+	}
+	
+	if (var direction == -3)
+	{
+		in motor.target_rps = out motor.rps * -3.0
+		if (var stopped)
+		{
+			if (var tick > 30)
+			{
+				var direction = -2
+				var tick = 0
+			}
+		}
+		else
+		{
+			var tick = 0
+		}
+	}
+	elseif (var direction == -2)
+	{
+		in motor.target_rps = var speed
+		if (var stopped)
+		{
+			if (var tick > 30)
+			{
+				var direction = -1
+				var tick = 0
+			}
+		}
+		else
+		{
+			var tick = 0
+		}
+	}
+	elseif (var direction == -1)
+	{
+		in motor.target_rps = var speed * -1.0
+		if (var stopped)
+		{
+			if (var tick > 30)
+			{
+				var range = var position_max - var position_min
+				var position = var range * -0.5
+				var position_max = var range * 0.0
+				var position_min = var range * 0.0
+				var open = false
+				var direction = 1
+			}
+		}
+		else
+		{
+			var tick = 0
+		}
+	}
+	elseif (var direction == 1)
+	{
+		
+		#in motor.target_rps = var position * -0.01
+		in motor.target_rps = var speed * 1.0
+		if (var position >= var position_max)
+		{
+			var direction = 2
+		}
+	}
+	elseif (var direction == 2)
+	{
+		in motor.target_rps = var speed * -1.0
+		if (var position <= var position_min)
+		{
+			var direction = 1
+		}
+	}
+	
+	
+	
+	
+}

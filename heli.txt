@@ -1,0 +1,86 @@
+#use pid
+#use matrix
+define var integer tick
+define var pid_data pid_engine
+define var bool initialized
+
+define function init()
+{
+	call make_pid (var pid_engine, 0.03, 0.0001, 0.0)
+	var initialized = true	
+}
+
+define function run_engine ()
+{
+	define var fractional throttle
+	define var fractional clutch
+	define var fractional starter
+
+	if (out run.is_pressed)
+	{
+		if (out engine.rps < 10.0)
+		{
+			var starter = 30.0
+		}
+		else
+		{
+			var starter = 0.0
+		}
+
+		if (out engine.rps < 6.0)
+		{
+			var throttle = 0.0
+			var clutch = 1.0
+		}
+		elseif (out engine.rps < 12.0)
+		{
+			var clutch = 1.0
+			var throttle = 1.0
+		}
+		else
+		{
+			var clutch = 0.0
+			call run_pid(var pid_engine, 120.0, out engine.rps, var throttle)
+		}
+	}
+	else
+	{
+		var throttle = 0.0
+		var clutch = 1.0
+		var starter = 0.0
+		var pid_engine.i = 0.0
+		var pid_engine.le = 0.0
+	}
+
+	in step_throttle.input = var throttle
+	in step_clutch.input = var clutch
+	in motor_starter.target_rps = var starter
+
+}
+
+on_tick
+{
+	define var fractional collective
+	define var fractional pitch
+	define var fractional roll
+
+	var tick = var tick + 1
+
+	if (! (var initialized))
+	{
+		call init()
+	}
+
+	call run_engine()
+	
+	
+	var collective = out collective_throttle.throttle
+	var pitch = out stick.pitch * -0.5
+	var roll = out stick.roll * -0.5
+
+	in step_pitch.input = var collective + var pitch
+	in step_roll_left.input = var collective - var roll - var pitch
+	in step_roll_right.input = var collective + var roll - var pitch
+	in step_yaw.input = out stick.left_pedal - out stick.right_pedal
+
+}

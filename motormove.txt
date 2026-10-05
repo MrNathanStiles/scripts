@@ -1,0 +1,26 @@
+
+define var fractional position
+define var fractional target
+
+on_tick
+{
+    define var fractional error
+
+    var position = var position + out motor.rps
+
+	if (out button_in.is_pressed)
+	{
+		in motor.target_rps = 30.0
+        var target = var position
+	}
+	elseif (out button_out.is_pressed)
+	{
+		in motor.target_rps = -30.0
+        var target = var position
+	}
+	else
+	{
+        var error = var position - var target
+		in motor.target_rps = var error * -0.1
+	}
+}

@@ -1,118 +1,137 @@
 define var integer tick
+define var integer state_change
 define var fractional position
-define var fractional position_min
-define var fractional position_max
-define var integer direction
 define var fractional delta
 define var fractional range
-define var bool open
-
 define var fractional speed
+define var integer state_calibrate_close
+define var integer state_calibrate_stop
+define var integer state_calibrate_find_start
+define var integer state_calibrate_find_end
+define var integer state_sweep_in
+define var integer state_sweep_out
+define var integer state
+define var bool connected
+define var fractional connection_start
+define var fractional connection_stop
 
 var tick = 0
+var state_change = 0
 var position = 0.0
-var direction = -3
 var delta = 1.0 / 60.0
-var position_min = 1.0
-var position_max = -1.0
-var open = true
-var speed = 30.0
+var range = 4.0 * 8.0
+var speed = 1.0
+var state_calibrate_close = 0
+var state_calibrate_stop = 1
+var state_calibrate_find_start = 2
+var state_calibrate_find_end = 3
+var state_sweep_in = 4
+var state_sweep_out = 5
+var state = var state_calibrate_close
+
 
 on_tick
 {
+    define var integer age
     define var bool stopped
+    define var bool change
 
     var tick = var tick + 1
     var position = var position + out motor.rps
 
-    if (var open)
-    {
-        if (var position > var position_max)
-        {
-            var position_max = var position
-        }
+    var age = var tick - var state_change
 
-        if (var position < var position_min)
-        {
-            var position_min = var position
-        }
-    }
-    
-    if (abs (out motor.rps) < 0.02)
+    var stopped = false
+    if (abs (out motor.rps) < 0.01)
     {
         var stopped = true
     }
 
-    if (var direction == -3)
+    
+    if (out center.is_on == var connected)
     {
-        in motor.target_rps = out motor.rps * -3.0
-        if (var stopped)
+        var change = false
+    }
+    else
+    {
+        var change = true
+    }
+    var connected = out center.is_on
+
+
+
+    if (var state_calibrate_close == var state)
+    {
+        in motor.target_rps = 1.0
+        if (var connected == false && var stopped && var age > 60)
         {
-            if (var tick > 60)
+            var state = var state_calibrate_stop
+            var state_change = var tick
+        }
+    }
+    elseif (var state_calibrate_stop == var state)
+    {
+        in motor.target_rps = out motor.rps * -1.0
+        if (out motor.rps == 0.0)
+        {
+            if (var age > 30)
             {
-                var direction = -2
-                var tick = 0
+                var state = var state_calibrate_find_start
+                var state_change = var tick
+                var position = 0.0
             }
         }
         else
         {
-            var tick = 0
+            var state_change = var tick
         }
     }
-    elseif (var direction == -2)
+    elseif (var state_calibrate_find_start == var state)
     {
-        in motor.target_rps = var speed
-        if (var stopped)
+        in motor.target_rps = -1.0
+        if (var change)
         {
-            if (var tick > 120)
-            {
-                var direction = -1
-                var tick = 0
-            }
-        }
-        else
-        {
-            var tick = 0
+            var connection_start = var position
+            var state = var state_calibrate_find_end
+            var state_change = var tick
         }
     }
-    elseif (var direction == -1)
+    elseif (var state_calibrate_find_end == var state)
     {
-        in motor.target_rps = var speed * -1.0
-        if (var stopped)
+        in motor.target_rps = -1.0
+        if (var change)
         {
-            if (var tick > 120)
-            {
-                var range = var position_max - var position_min
-                var position = var range * -0.5
-                var position_max = var range * 0.1
-                var position_min = var range * -0.1
-                var open = false
-                var direction = 1
-            }
-        }
-        else
-        {
-            var tick = 0
+            var connection_stop = var position
+            var state = var state_sweep_in
+            var state_change = var tick
         }
     }
-    elseif (var direction == 1)
+    elseif (var state_sweep_in == var state)
     {
-        in motor.target_rps = var speed
-        if (var position >= var position_max)
+        in motor.target_rps = 1.0
+        # this is the disconnect position moving toward the motor
+        if (var change && var connected == false)
         {
-            var direction = 2
+            in error.display_value = (var position - var connection_start) * 0.01
+            var state = var state_sweep_out
+            var state_change = var tick
         }
     }
-    elseif (var direction == 2)
+    elseif (var state_sweep_out == var state)
     {
-        in motor.target_rps = var speed * -1.0
-        if (var position <= var position_min)
+        in motor.target_rps = -1.0
+        # this is the disconnect position moving away from the motor
+        if (var change && var connected == false)
         {
-            var direction = 1
+            in error.display_value = (var position - var connection_stop) * 0.01
+            var state = var state_sweep_in
+            var state_change = var tick
         }
     }
 
     
+
+
     
 	
 }
