@@ -91,12 +91,14 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 	var build_matrix_up.x = 0.0
 	var build_matrix_up.y = 1.0
 	var build_matrix_up.z = 0.0
-
+	
 	call vec_cross(var build_matrix_up, var build_matrix_forward, var build_matrix_right)
+	call vec_normalize(var build_matrix_right, var build_matrix_right)
 	call vec_cross(var build_matrix_forward, var build_matrix_right, var build_matrix_up)
+	call vec_normalize(var build_matrix_up, var build_matrix_up)
 	call vec_rotate(var build_matrix_up, var build_matrix_forward, var build_matrix_roll, var build_matrix_up)
-	call vec_cross(var build_matrix_up, var build_matrix_forward, var build_matrix_right)
-
+	call vec_cross(var build_matrix_forward, var build_matrix_up, var build_matrix_right)
+	
 	call vec_normalize(var build_matrix_right, var build_matrix_right)
 	call vec_normalize(var build_matrix_up, var build_matrix_up)
 	call vec_normalize(var build_matrix_forward, var build_matrix_forward)

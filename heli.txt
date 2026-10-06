@@ -91,15 +91,15 @@ define function run_ips()
 	var run_ips_acc.x = out acc_right.acceleration
     var run_ips_acc.y = out acc_up.acceleration
     var run_ips_acc.z = out acc_front.acceleration
-	
-	
+
 	call to_world (var run_ips_acc, var run_ips_acc)
-
+	
+	call vec_scale (var run_ips_acc, var delta, var run_ips_acc)
 	call vec_add (var world_velocity, var run_ips_acc, var world_velocity)
+	
 	call vec_scale (var world_velocity, var delta, var run_ips_velo)
-
 	call vec_add (var world_position, var run_ips_velo, var world_position)
-
+	
 	call to_local (var unit, var unit_local)
 	call to_world (var unit, var unit_world)
 	
