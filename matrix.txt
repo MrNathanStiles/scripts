@@ -19,17 +19,8 @@ define type matrix
 }
 
 define var matrix matrix_world
-define var vector global_velo
-define var vector global_position
 
 #assign
-var global_velo.x = 0.0
-var global_velo.y = 0.0
-var global_velo.z = 0.0
-
-var global_position.x = 0.0
-var global_position.y = 0.0
-var global_position.z = 0.0
 
 call matrix_identity (var matrix_world)
 
@@ -51,48 +42,64 @@ define function matrix_identity (matrix matrix_identity_matrix)
 
 }
 
-# cos(zero_deg) = 1
-# cos(neinty_deg) = 0.0007963267107332633
-# cos(one_eighty_deg) = -0.9999987317275395
-# so the up tilt sensor apparently gives the y component
-# so
+
+# in stormwork
+# compass - is east
+# compass + is west
+# in anymaker 
+# compass - is east
+# compass + is west
+
+# Right = Up x Forward
+# Up = Forward x Right
+# Forward = Right x Up
 
 define function build_matrix (fractional build_matrix_compass, fractional build_matrix_tilt_forward, fractional build_matrix_tilt_right, matrix build_matrix_result)
 {
-	define var vector build_matrix_heading
-	define var vector build_matrix_up
 	define var vector build_matrix_right
-	define var fractional build_matrix_sr
-	define var fractional build_matrix_cr
+	define var vector build_matrix_up
+	define var vector build_matrix_forward
+	
+	define var fractional build_matrix_yaw
+	define var fractional build_matrix_pitch
+	define var fractional build_matrix_roll
+	define var fractional build_matrix_sy
+	define var fractional build_matrix_cy
 	define var fractional build_matrix_sp
 	define var fractional build_matrix_cp
 	
+	var build_matrix_yaw = param build_matrix_compass / -360.0
+	var build_matrix_yaw = var build_matrix_yaw + 0.5
+	var build_matrix_yaw = var build_matrix_yaw * var TAU
+	var build_matrix_yaw = var build_matrix_yaw - var PI
 	
-	param build_matrix_tilt_forward = ((param build_matrix_tilt_forward - 90.0) / 180.0) * var PI
-	param build_matrix_tilt_right = ((param build_matrix_tilt_right - 90.0) / 180.0) * var PI
+	var build_matrix_pitch = param build_matrix_tilt_forward / 180.0
+	var build_matrix_pitch = var build_matrix_pitch * var TAU
 
-	var build_matrix_sr = sin (param build_matrix_tilt_right)
-	var build_matrix_cr = cos (param build_matrix_tilt_right)
-	var build_matrix_sp = sin (param build_matrix_tilt_forward)
-	var build_matrix_cp = cos (param build_matrix_tilt_forward)
-	
-	param build_matrix_compass = (param build_matrix_compass / 180.0) * var PI
+	var build_matrix_roll = param build_matrix_tilt_right / 180.0
+	var build_matrix_roll = var build_matrix_roll * var TAU
 
-	var build_matrix_heading.x = sin (param build_matrix_compass) * -1.0
-	var build_matrix_heading.y = 0.0
-	var build_matrix_heading.z = cos (param build_matrix_compass)
-	
+	var build_matrix_sy = sin (var build_matrix_yaw)
+	var build_matrix_cy = cos (var build_matrix_yaw)
+	var build_matrix_sp = sin (var build_matrix_pitch)
+	var build_matrix_cp = cos (var build_matrix_pitch)
 
-	var build_matrix_up.x = var build_matrix_sr * -1.0
-	var build_matrix_up.y = var build_matrix_cp * var build_matrix_cr
-	var build_matrix_up.z = var build_matrix_sp * var build_matrix_cr
-	
-	call vec_cross (var build_matrix_up, var build_matrix_heading, var build_matrix_right)
-	call vec_cross (var build_matrix_right, var build_matrix_up, var build_matrix_heading)
-	
-	call vec_normalize (var build_matrix_heading, var build_matrix_heading)
-	call vec_normalize (var build_matrix_up, var build_matrix_up)
-	call vec_normalize (var build_matrix_right, var build_matrix_right)
+	var build_matrix_forward.x = var build_matrix_sy * var build_matrix_cp
+	var build_matrix_forward.y = var build_matrix_sp
+	var build_matrix_forward.z = var build_matrix_cy * var build_matrix_cp
+
+	var build_matrix_up.x = 0.0
+	var build_matrix_up.y = 1.0
+	var build_matrix_up.z = 0.0
+
+	call vec_cross(var build_matrix_up, var build_matrix_forward, var build_matrix_right)
+	call vec_cross(var build_matrix_forward, var build_matrix_right, var build_matrix_up)
+	call vec_rotate(var build_matrix_up, var build_matrix_forward, var build_matrix_roll, var build_matrix_up)
+	call vec_cross(var build_matrix_up, var build_matrix_forward, var build_matrix_right)
+
+	call vec_normalize(var build_matrix_right, var build_matrix_right)
+	call vec_normalize(var build_matrix_up, var build_matrix_up)
+	call vec_normalize(var build_matrix_forward, var build_matrix_forward)
 	
 	param build_matrix_result.m00 = var build_matrix_right.x
 	param build_matrix_result.m01 = var build_matrix_right.y
@@ -100,9 +107,9 @@ define function build_matrix (fractional build_matrix_compass, fractional build_
 	param build_matrix_result.m10 = var build_matrix_up.x
 	param build_matrix_result.m11 = var build_matrix_up.y
 	param build_matrix_result.m12 = var build_matrix_up.z
-	param build_matrix_result.m20 = var build_matrix_heading.x
-	param build_matrix_result.m21 = var build_matrix_heading.y
-	param build_matrix_result.m22 = var build_matrix_heading.z
+	param build_matrix_result.m20 = var build_matrix_forward.x
+	param build_matrix_result.m21 = var build_matrix_forward.y
+	param build_matrix_result.m22 = var build_matrix_forward.z
 	
 }
 

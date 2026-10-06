@@ -1,8 +1,11 @@
+#use sign
 
 #define
 define var fractional PI
+define var fractional TAU
 define var fractional delta
 
 #assign
 var PI = 3.141592
+var TAU = var PI * 2.0
 var delta = 1.0 / 60.0

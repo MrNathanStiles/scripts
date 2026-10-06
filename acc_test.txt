@@ -1,0 +1,14 @@
+define var fractional total_acc
+define var fractional total_down
+define var fractional total_up
+
+on_tick
+{
+    var total_acc = var total_acc + out acc_down.acceleration
+    var total_acc = var total_acc + out acc_up.acceleration
+
+    var total_down = var total_down + out acc_down.acceleration
+    var total_up = var total_up + out acc_up.acceleration
+
+    in disp_acc.display_value = abs (var total_acc)
+}

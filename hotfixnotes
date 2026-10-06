@@ -1,0 +1,96 @@
+v0.1.21
+Rework - tilt sensor angle now relative to horizon rather than vertical axis
+Rework - updated altitude sensor mesh
+Fix - held item position no longer moves when pressing shift but not moving
+Fix - fixed rare crash in microcontroller related to function parameters
+Fix - disconnected incapacitated players no longer despawn
+Fix - feedback button now logs in correctly after game has been running for a while
+
+hotfix v0.1.20
+Rework - removed the mass cap for wheels, tracks, trains and torque, which fixes oscillation on heavy vehicles
+Fix - fixed falling through the floor when first loading into a multiplayer game with slow cpu or internet
+Fix - fixed wheel drag and steering to use the correct steering angle
+Fix - fixed vehicle secondary meshes being culled at the wrong distance
+Fix - fixed projectiles hitting their own source vehicle when travelling fast enough
+Fix - ropes fully inside a vehicle group are now saved with the group, and pasting a group with a rope that has no definition no longer breaks
+Fix - fixed empty tiles resetting on load
+Fix - fixed the air filter description
+Fix - fixed the tutorial sometimes locking up the loading screen
+Fix - fixed the tooltip icon not displaying correctly for axis actions on keyboard and mouse
+
+hotfix v0.1.19
+Fix - fixed issue where in some places, vehicles would think they were inside a bunker and despawn
+Fix - fixed ui related crash
+Fix - fixed rotor rps getting out of control when in reverse
+Fix - fixed high bandwidth usage when viewing liquid data on moving vehicle
+Fix - fixed bunker poor performance and crashes related to button near bunker entrance
+Fix - fixed other crashes
+
+
+hotfix v0.1.15-18
+Feature - new tutorial system explaining survival concepts, building concepts, tools
+Feature - added climbing up fast ropes
+Feature - user defined component names now show on tooltip
+Rework - fullscreen is now default graphics mode
+Rework - allow using handle when in seat or ladder
+Fix - fixed poor performance when looking at tool walls
+Fix - fixed issue where trees would sometimes flicker as a tile loaded
+Fix - fullscreen resolution no longer resets on loading screen
+Fix - fix for physics crash related to constraints
+Fix - refactored lighting code to handle many lights better
+Fix - resolved spinning in free move mode
+Fix - fix control state after using fast rope
+Fix - alternators now produce much more power, but may also drain more torque
+Fix - ui select and remove are now rebindable controls
+
+hotfix v0.1.13-14
+Rework - creative and sandbox modes now available from start and do not require tutorial completion
+Rework - sandbox weather is now fixed to clear sunny day, no rain
+Fix - fixed crash related to oil manifolds and splitting vehicle
+
+hotfix v0.1.12
+Rework - release free move mode when entering seat, ladder, weapon mount, rope to avoid physics issues
+Fix - fixed crash related to liquid tanks
+Fix - fixed crash related to ropes on server
+
+hotfix v0.1.11
+Feature - added descriptions for items and components
+Rework - reduced memory consumption of some gpu resources to reduce memory load of gpu and system (will fix some crashes for some users who were running out of memory)
+Rework - rebalanced impact damage to make it easier to kill animals and zombies with vehicle impact
+Fix - fix for position of disconnected items from components
+Fix - oil filter item now correctly tracks condition
+Fix - fixed formatting of numbers in UI where scientific notation was sometimes used
+
+
+hotfix v0.1.10
+Rework - activated taskbar icon
+Fix - fixed memory leak in unusual situation with audio driver error
+Fix - characters and other actors no longer effect wheels
+Fix - fixed crash related to liquid contents of vehicle components
+Fix - fixed various situations where it wasn't possible to advance the tutorial
+
+hotfix v0.1.8
+Fix - splitting a vehicle no longer breaks control seats
+Fix - resolved rare crash relating to tooltips of vehicles
+
+0.1.7 no notes
+
+hotfix v0.1.6
+Rework - updated some buildings
+Fix - game no longer returns to main menu when on esc menu for too long
+Fix - resolved some crashes related to microcontrollers
+Fix - resolved some crashes related to loading vehicles with ropes or connections
+Fix - resolved crash when loading bad or missing png data
+
+hotfix v0.1.5
+Fix - removed wishlist button
+Fix - fixed missing physics geometry at some places in the bunkers
+Fix - crash report submission
+
+hotfix v0.1.4
+Fix - fixed stuttering issue for surround sound hardware
+Fix - fixed invert mouse setting functionality
+
+hotfix v0.1.3
+Fix - fixed crash on settings menu for some users with laptops
+Fix - updated buildings with errors to latest

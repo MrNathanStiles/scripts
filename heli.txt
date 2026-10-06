@@ -3,60 +3,175 @@
 
 define var integer tick
 define var pid_data pid_engine
+define var pid_data pid_collective
+define var pid_data pid_pitch
+define var pid_data pid_roll
+
 define var bool initialized
+define var vector world_velocity
+define var vector world_position
+define var vector unit_local
+define var vector unit_world
+define var fractional target_altitude
+define var fractional last_altitude
 
 define function init()
 {
-	call make_pid (var pid_engine, 0.03, 0.0001, 0.0)
-	var initialized = true	
+	call make_pid (var pid_engine, 0.03, 0.0005, 0.0)
+	call make_pid (var pid_collective, 1.0, 0.0001, 0.0)
+	call make_pid (var pid_pitch, 1.0, 0.0001, 0.0)
+	call make_pid (var pid_roll, 1.0, 0.0001, 0.0)
+	var last_altitude = out altitude.altitude
+	var target_altitude = out altitude.altitude
+	var initialized = true
 }
 
 define function run_engine ()
 {
-	define var fractional throttle
-	define var fractional clutch
-	define var fractional starter
+	define var fractional run_engine_throttle
+	define var fractional run_engine_clutch
+	define var fractional run_engine_starter
 
 	if (out run.is_pressed)
 	{
 		if (out engine.rps < 10.0)
 		{
-			var starter = 30.0
+			var run_engine_starter = 30.0
 		}
 		else
 		{
-			var starter = 0.0
+			var run_engine_starter = 0.0
 		}
-
+		if (out engine.rps > 130.0 && var pid_engine.i > 0.0)
+		{
+			var pid_engine.i = var pid_engine.i * 0.9	
+		}
 		if (out engine.rps < 6.0)
 		{
-			var throttle = 0.0
-			var clutch = 1.0
+			var run_engine_throttle = 0.0
+			var run_engine_clutch = 1.0
 		}
 		elseif (out engine.rps < 12.0)
 		{
-			var clutch = 1.0
-			var throttle = 1.0
+			var run_engine_clutch = 1.0
+			var run_engine_throttle = 1.0
 		}
 		else
 		{
-			var clutch = 0.0
-			call run_pid(var pid_engine, 120.0, out engine.rps, var throttle)
+			var run_engine_clutch = 0.0
+			call run_pid(var pid_engine, 120.0, out engine.rps, var run_engine_throttle)
 		}
 	}
 	else
 	{
-		var throttle = 0.0
-		var clutch = 1.0
-		var starter = 0.0
+		var run_engine_throttle = 0.0
+		var run_engine_clutch = 1.0
+		var run_engine_starter = 0.0
 		var pid_engine.i = 0.0
 		var pid_engine.le = 0.0
 	}
 
-	in step_throttle.input = var throttle
-	in step_clutch.input = var clutch
-	in motor_starter.target_rps = var starter
+	in step_throttle.input = var run_engine_throttle
+	in step_clutch.input = var run_engine_clutch
+	in motor_starter.target_rps = var run_engine_starter
 
+}
+
+define function run_ips()
+{
+	define var vector run_ips_acc
+	define var vector run_ips_velo
+	define var vector unit
+	define var fractional run_ips_velo_scalar
+
+	var unit.x = 0.0
+	var unit.y = 0.0
+	var unit.z = 1.0
+
+	var run_ips_acc.x = out acc_right.acceleration
+    var run_ips_acc.y = out acc_up.acceleration
+    var run_ips_acc.z = out acc_front.acceleration
+	
+	
+	call to_world (var run_ips_acc, var run_ips_acc)
+
+	call vec_add (var world_velocity, var run_ips_acc, var world_velocity)
+	call vec_scale (var world_velocity, var delta, var run_ips_velo)
+
+	call vec_add (var world_position, var run_ips_velo, var world_position)
+
+	call to_local (var unit, var unit_local)
+	call to_world (var unit, var unit_world)
+	
+
+	in disp_pos_x.display_value = abs (var world_position.x)
+	in disp_pos_z.display_value = abs (var world_position.z)
+
+	if (var world_position.x < 0.0)
+	{
+		in disp_pos_x_neg.is_illuminated = true
+	}
+	else
+	{
+		in disp_pos_x_neg.is_illuminated = false
+	}
+
+	if (var world_position.z < 0.0)
+	{
+		in disp_pos_z_neg.is_illuminated = true
+	}
+	else
+	{
+		in disp_pos_z_neg.is_illuminated = false
+	}
+
+	call vec_len (var world_velocity, var run_ips_velo_scalar)
+	in disp_velo.display_value = abs (var run_ips_velo_scalar)
+	
+}
+
+define function run_collective (fractional run_collective_result)
+{
+	define var fractional run_collective_velo
+	define var fractional run_collective_error
+	define var fractional run_collective_target
+	define var fractional run_collective_sign
+
+	var run_collective_velo = (out altitude.altitude - var last_altitude) * 60.0
+	var run_collective_error = var target_altitude - out altitude.altitude
+	call sign (var run_collective_error, var run_collective_sign)
+	var run_collective_error = abs (var run_collective_error)
+	var run_collective_target = sqrt (2.0 * 0.1 * var run_collective_error)
+	var run_collective_target = var run_collective_target * var run_collective_sign
+
+	if (out pilot.is_pressed)
+	{
+		call run_pid(var pid_collective, var run_collective_target, var run_collective_velo, param run_collective_result)
+		if (param run_collective_result < 0.0)
+		{
+			param run_collective_result = 0.0
+		}
+	}
+	else
+	{
+		param run_collective_result = out collective_throttle.throttle
+		var pid_collective.i = 0.0
+		var pid_collective.le = 0.0
+	}
+
+	if (out altitude_down.is_pressed)
+	{
+		var target_altitude = var target_altitude - 0.1
+	}
+	elseif (out altitude_up.is_pressed)
+	{
+		var target_altitude = var target_altitude + 0.1
+	}
+	if (var target_altitude < 0.0)
+	{
+		var target_altitude = 0.0
+	}
+	var last_altitude = out altitude.altitude
 }
 
 on_tick
@@ -71,6 +186,8 @@ on_tick
 	if (! (var initialized))
 	{
 		call init()
+		var world_position.y = out altitude.altitude
+		
 	}
 
 	call run_engine()
@@ -78,15 +195,25 @@ on_tick
 	var compass = out compass.north_angle
 	var pitch = out tilt_forward.tilt
 	var roll = out tilt_right.tilt
-	call build_matrix(var compass, var pitch, var roll, var matrix_world)
 	
-	var collective = out collective_throttle.throttle
-	var pitch = out stick.pitch * -0.5
-	var roll = out stick.roll * -0.5
+	call build_matrix(var compass, var pitch, var roll, var matrix_world)
+	call run_ips()
 
+	
+	call run_collective (var collective)
+	var pitch = out stick.pitch * -0.25 - out tilt_forward.tilt / 180.0
+	var roll = out stick.roll * -0.25 - out tilt_right.tilt / 180.0
+
+	call run_pid(var pid_pitch, 0.0, var pitch * -1.0, var pitch)
+	call run_pid(var pid_roll, 0.0, var roll * -1.0, var roll)
+	
 	in step_pitch.input = var collective + var pitch
 	in step_roll_left.input = var collective - var roll - var pitch
 	in step_roll_right.input = var collective + var roll - var pitch
 	in step_yaw.input = out stick.left_pedal - out stick.right_pedal
+
+	in disp_compass.display_value = out compass.north_angle / 180.0
+	in disp_altitude.display_value = out altitude.altitude
+	in disp_target_altitude.display_value = var target_altitude
 
 }
